@@ -6,3 +6,5 @@ class HelloWorld {
 
 
 "Hello"
+
+"Jeg pusher noget"
