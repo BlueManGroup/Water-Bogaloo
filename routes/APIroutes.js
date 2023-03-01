@@ -5,7 +5,7 @@ router.post('/signup', (req, res) =>{
     const data = req.body
     
     //Database query goes here
-
+    console.log(data)
     res.send("data received")
 });
 
