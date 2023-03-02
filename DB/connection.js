@@ -21,19 +21,24 @@ async function connectToDatabase() {
 //Database connection
 const db = client.db("Slusen")
 
-//create operation **Needs input validation**
-async function create(collection,data,) {
-    if(collection == "users") {
-        await db.collection("users").insertOne(data)
-    } else {
-        throw new error("invalid collection")
+// Check if collection is in database
+// If not, get error
+async function checkColl(collection) {
+    colls = ["users", "tokens"];
+    if (!(collection in colls)) {
+        throw new error("invalid collection");
     }
 }
 
+//create operation **Needs input validation**
+async function create(collection,data,) {
+    await checkColl(collection);
+    
+    await db.collection("users").insertOne(data)
+}
+
 async function del(collection, data) {
-    if(collection != "users" && collection != "tokens") {
-        throw new error("invalid collection");
-    }
+    await checkColl(collection);
 
     let oid = new ObjectId(data._id);
 
@@ -42,19 +47,24 @@ async function del(collection, data) {
 
 //Update operation **Needs input validation**
 async function update(collection,identifier,parameter,data) {
-    if(collection == "users") {
-      await db.collection("users").updateOne(
-        {_id: identifier},
-        {$set: {parameter: data}},
-        (err, result) => {
-          if (err) {
+    await checkColl(collection);
+    await db.collection("users").updateOne(
+    {_id: identifier},
+    {$set: {parameter: data}},
+    (err, result) => {
+        if (err) {
             console.error(err);
-          } else {
+        } else {
             console.log(result);
-          }  
-        }
-      );
-    }
+        }  
+    });
+}
+
+
+//read operation 
+async function read(collection,data,) {
+    await checkColl(collection);
+    await db.collection("users").findOne({username:data});
 
 }
 
@@ -62,15 +72,3 @@ async function update(collection,identifier,parameter,data) {
 module.exports = {
     create,read, del
 };
-
-
-//read operation 
-async function read(collection,data,) {
-
-    if(collection == "users") {
-         await db.collection("users").findOne({username:data});
-    }
-    else {
-        throw new error("no collection found")
-    }
-}
