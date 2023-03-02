@@ -1,33 +1,31 @@
-const {MongoClient} = require('mongodb');
+const MongoClient = require('mongodb').MongoClient;
+require('dotenv').config()
 
-async function main() {
-	/**
- * Connection URI. Update <username>, <password>, and <your-cluster-url> to reflect your cluster.
- * See https://docs.mongodb.com/ecosystem/drivers/node/ for more details
- */
-    const uri = "mongodb://Morfar:Pas%20p%C3%A5%20Mormor!%20Eller%20du%20bliver%20encrypted...@10.92.1.36:27017/?authMechanism=DEFAULT";
+//.env variables
+DBURI = process.env.DBURI
 
-    const client = new MongoClient(uri);
+//MongoDB connection
+const client = new MongoClient(DBURI, { useNewUrlParser: true, useUnifiedTopology: true })
+client.connect(err => {
+    if (err) {
+      console.error(err);
+      process.exit(1);
+    }
+})
 
-    try {
-        // Connect to the MongoDB cluster
-        await client.connect();
-        
-        // Make the appropriate DB calls
-        await listDatabases(client);
- 
-    } catch (e) {
-        console.error(e);
-    } finally {
-        await client.close();
+//Database connection
+const db = client.db("Slusen")
+
+
+//create operation **Needs input validation**
+async function create(collection,data,) {
+    if(collection == "users") {
+        await db.collection("users").insertOne(data)
+    } else {
+        throw new error("invalid collection")
     }
 }
 
-main().catch(console.error);
-
-async function listDatabases(client){
-    databasesList = await client.db().admin().listDatabases();
- 
-    console.log("Databases:");
-    databasesList.databases.forEach(db => console.log(` - ${db.name}`));
+module.exports = {
+    create,
 };
