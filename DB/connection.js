@@ -50,17 +50,5 @@ async function update(collection,identifier,parameter,data) {
 
 
 module.exports = {
-    create,read
+    create,
 };
-
-
-//read operation 
-async function read(collection,data,) {
-
-    if(collection == "users") {
-         await db.collection("users").findOne({username:data});
-    }
-    else {
-        throw new error("no collection found")
-    }
-}
