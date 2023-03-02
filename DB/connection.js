@@ -27,5 +27,17 @@ async function create(collection,data,) {
 }
 
 module.exports = {
-    create,
+    create,read
 };
+
+
+//read operation 
+async function read(collection,data,) {
+
+    if(collection == "users") {
+         await db.collection("users").findOne({username:data});
+    }
+    else {
+        throw new error("no collection found")
+    }
+}
