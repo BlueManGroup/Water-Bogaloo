@@ -1,4 +1,5 @@
 const MongoClient = require('mongodb').MongoClient;
+var ObjectId = require('mongodb').ObjectId;
 require('dotenv').config()
 
 //.env variables
@@ -16,7 +17,6 @@ client.connect(err => {
 //Database connection
 const db = client.db("Slusen")
 
-
 //create operation **Needs input validation**
 async function create(collection,data,) {
     if(collection == "users") {
@@ -26,6 +26,17 @@ async function create(collection,data,) {
     }
 }
 
+async function del(collection, data) {
+    if(collection != "users" && collection != "tokens") {
+        throw new error("invalid collection");
+    }
+
+    let oid = new ObjectId(data._id);
+
+    await db.collection(collection).deleteOne({_id: oid});    
+}
+
 module.exports = {
     create,
+    del
 };
