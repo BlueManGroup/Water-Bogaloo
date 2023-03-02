@@ -1,5 +1,5 @@
 const router = require('express').Router();
-const {create, del} = require('../DB/connection')
+const {create, del, read} = require('../DB/connection')
 
 
 router.post('/signup', (req, res) =>{
@@ -23,14 +23,7 @@ router.get('/login', (req, res) =>{
     res.send("data received")
 });
 
-router.post('/logout', (req, res) =>{
-    
-    const data = req.body
-    
-    //Database query goes here
 
-    res.send("data received")
-});
 
 router.post('/delete', (req, res) =>{
     
@@ -47,6 +40,16 @@ router.post('/delete', (req, res) =>{
     catch(e) {
         console.error(e);
     }
+});
+
+router.get('/read',(req, res) =>{
+    
+    const data = req.body
+    read('users', data)
+
+    //database query goes here
+    console.log(data)
+    res.send("data received")    
 });
 
 module.exports = router;

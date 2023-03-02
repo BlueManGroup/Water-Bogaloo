@@ -15,7 +15,7 @@ const PORT = process.env.PORT || 3000
 
 
 //setup routers
-const APIroutes = require('./routes/APIroutes')
-app.use('/', APIroutes)
+const BaseURL = require('./routes/APIroutes')
+app.use('/', BaseURL)
 
 app.listen(PORT, () => console.log(`Listening on port ${PORT}`));
