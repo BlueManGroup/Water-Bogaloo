@@ -1,5 +1,5 @@
 const router = require('express').Router();
-const {create,read} = require('../DB/connection')
+const {create, del, read} = require('../DB/connection')
 
 
 router.post('/signup', (req, res) =>{
@@ -25,6 +25,22 @@ router.get('/login', (req, res) =>{
 
 
 
+router.post('/delete', (req, res) =>{
+    
+    const data = req.body;
+    console.log(data);
+    
+    try {
+        //update coll to take from data instead of being hardcoded
+        const coll = 'users';
+        del(coll, data);
+        
+        res.send("data received");
+    }
+    catch(e) {
+        console.error(e);
+    }
+});
 
 router.get('/read',(req, res) =>{
     
