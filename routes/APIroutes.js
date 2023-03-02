@@ -23,23 +23,8 @@ router.get('/login', (req, res) =>{
     res.send("data received")
 });
 
-router.post('/logout', (req, res) =>{
-    
-    const data = req.body
-    
-    //Database query goes here
 
-    res.send("data received")
-});
 
-router.delete('/delete', (req, res) =>{
-    
-    const data = req.body
-    
-    //Database query goes here
-
-    res.send("data received")
-});
 
 router.get('/read',(req, res) =>{
     
