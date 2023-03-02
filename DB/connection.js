@@ -9,12 +9,12 @@ const client = new MongoClient(DBURI, { useNewUrlParser: true, useUnifiedTopolog
 //MongoDB connection
 async function connectToDatabase() {
     try {
-      await client.connect();
-      console.log("Connected to MongoDB!");
+        await client.connect();
+        console.log("Connected to MongoDB!");
     } catch (err) {
-      console.error("Failed to connect to MongoDB", err);
+        console.error("Failed to connect to MongoDB", err);
     }
-  }
+}
   connectToDatabase();
 
 //Database connection
@@ -34,33 +34,33 @@ async function create(collection,data,) {
 async function update(collection,identifier,parameter,data) {
     if(collection == "users") {
       await db.collection("users").updateOne(
-        {_id: identifier},
-        {$set: {parameter: data}},
-        (err, result) => {
+      {_id: identifier},
+      {$set: {[parameter]: data}},
+      (err, result) => {
           if (err) {
-            console.error(err);
+              console.error(err);
           } else {
-            console.log(result);
+              console.log(result);
           }  
-        }
-      );
+      });
     }
-
 }
 
 
 module.exports = {
-    create,read
+    create,read,update
 };
 
 
 //read operation 
-async function read(collection,data,) {
+async function read(collection,identifier,parameter) {
 
-    if(collection == "users") {
-         await db.collection("users").findOne({username:data});
-    }
-    else {
-        throw new error("no collection found")
-    }
+
+
+if(collection == "users") {
+    result = await db.collection("users").findOne({[identifier]:data});
+} else {
+    throw new error("no collection found")
+}
+    return result
 }

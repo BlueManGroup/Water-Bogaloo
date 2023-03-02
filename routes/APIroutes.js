@@ -1,6 +1,6 @@
 const router = require('express').Router();
-const {create} = require('../DB/connection')
-const {read} = require('../DB/connection');
+const {create,read} = require('../DB/connection')
+
 
 router.post('/signup', (req, res) =>{
     
