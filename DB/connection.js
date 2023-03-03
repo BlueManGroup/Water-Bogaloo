@@ -25,6 +25,7 @@ const db = client.db("Slusen")
 // If not, get error
 async function checkColl(collection) {
     colls = ["users", "tokens"];
+
     if (!colls.includes(collection)) {
         throw new Error("invalid collection");
     }
@@ -41,36 +42,39 @@ async function del(collection, userid) {
     await checkColl(collection);
 
     let oid = new ObjectId(userid);
-
     await db.collection(collection).deleteOne({_id: oid});    
 }
 
 //Update operation **Needs input validation**
 async function update(collection,userid,parameter,data) {
-    let oid = new ObjectId(userid)
+    let oid = new ObjectId(userid);
+
     await checkColl(collection);
     await db.collection("users").updateOne(
-    {_id: oid},
-    {$set: {[parameter]: data}},
-    (err, result) => {
-        if (err) {
-            console.error(err);
-        } else {
-            console.log(result);
-        }  
-    });
+        {_id: oid},
+        {$set: {[parameter]: data}},
+        (err, result) => {
+            if (err) {
+                console.error(err);
+            } else {
+                console.log(result);
+            }  
+        }
+    );
 }
 
 
 //read operation 
 async function read(collection,userid) {
     await checkColl(collection);
-    let oid = new ObjectId(userid)
-    let result = await db.collection("users").findOne({_id:oid});
+
+    let oid = new ObjectId(userid);
+    let result = await db.collection("users").findOne({ _id: oid });
+    
     return result;
 }
 
 
 module.exports = {
-    create,read, del, update
+    create, read, del, update
 };

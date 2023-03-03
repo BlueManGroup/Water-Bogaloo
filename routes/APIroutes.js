@@ -1,49 +1,46 @@
 const router = require('express').Router();
-const {create, del, read, update} = require('../DB/connection')
+const {create, del, read, update} = require('../DB/connection');
 
 ////////////////////////////////
 //Frontpage
 router.post('/signup', (req, res) =>{
     
-    const data = req.body
+    const data = req.body;
     
-    create('users',data)
+    create('users', data);
    
 
     //Database query goes here
-    console.log(data)
-    res.send("data received")
+    res.send("account created");
 });
 
 router.get('/login', (req, res) =>{
     
-    const data = req.body
+    const data = req.body;
     
     //Database query goes here
 
-    res.send("data received")
+    res.send("data received");
 });
 
 ////////////////////////////////
 //Account routes
 router.post('/account/logout', (req, res) =>{
     
-    const data = req.body
+    const data = req.body;
     
     //Database query goes here
 
-    res.send("data received")
+    res.send("data received");
 });
 
 router.post('/account/updatePassword', async(req, res) =>{
-    data = req.body
-    result = await read("users",data.userid,"password")
-    console.log(data.password_old)
-    console.log(result)
+    data = req.body;
+    result = await read("users",data.userid,"password");
 
     if (data.password_old == result.password) {
-        update("users",data.userid,"password",data.password_new)
-        res.send("sucess!")
+        update("users",data.userid,"password",data.password_new);
+        res.send("password changed");
     } else {
         throw new Error("invalid password")
     }
@@ -52,14 +49,13 @@ router.post('/account/updatePassword', async(req, res) =>{
 router.post('/account/delete', (req, res) =>{
     
     const data = req.body;
-    console.log(data);
     
     try {
         //update coll to take from data instead of being hardcoded
         const coll = 'users';
         del(coll, data);
         
-        res.send("data received");
+        res.send("account deleted");
     }
     catch(e) {
         console.error(e);
