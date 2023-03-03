@@ -25,8 +25,8 @@ const db = client.db("Slusen")
 // If not, get error
 async function checkColl(collection) {
     colls = ["users", "tokens"];
-    if (!(collection in colls)) {
-        throw new error("invalid collection");
+    if (!colls.includes(collection)) {
+        throw new Error("invalid collection");
     }
 }
 
@@ -47,7 +47,7 @@ async function del(collection, userid) {
 
 //Update operation **Needs input validation**
 async function update(collection,userid,parameter,data) {
-    let oid = new(ObjectId(userid))
+    let oid = new ObjectId(userid)
     await checkColl(collection);
     await db.collection("users").updateOne(
     {_id: oid},
@@ -63,13 +63,14 @@ async function update(collection,userid,parameter,data) {
 
 
 //read operation 
-async function read(collection,value) {
+async function read(collection,userid) {
     await checkColl(collection);
-    await db.collection("users").findOne({_id:userid});
-
+    let oid = new ObjectId(userid)
+    let result = await db.collection("users").findOne({_id:oid});
+    return result;
 }
 
 
 module.exports = {
-    create,read, del
+    create,read, del, update
 };

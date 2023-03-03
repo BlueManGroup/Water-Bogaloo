@@ -1,5 +1,5 @@
 const router = require('express').Router();
-const {create, del, read} = require('../DB/connection')
+const {create, del, read, update} = require('../DB/connection')
 
 ////////////////////////////////
 //Frontpage
@@ -35,11 +35,15 @@ router.post('/account/logout', (req, res) =>{
     res.send("data received")
 });
 
-router.post('/account/updatePassword', (req, res) =>{
+router.post('/account/updatePassword', async(req, res) =>{
     data = req.body
+    result = await read("users",data.userid,"password")
+    console.log(data.password_old)
+    console.log(result)
 
-    if (data.password_old === read("users",data._id,"password")) {
-        update("users",data._id,"password",data.password_new)
+    if (data.password_old == result.password) {
+        update("users",data.userid,"password",data.password_new)
+        res.send("sucess!")
     } else {
         throw new Error("invalid password")
     }
