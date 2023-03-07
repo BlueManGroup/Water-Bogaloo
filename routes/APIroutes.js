@@ -1,26 +1,54 @@
 const router = require('express').Router();
 const {create, del, read, update} = require('../DB/connection');
+const jwt = require('jsonwebtoken')
+require('dotenv').config()
+
 
 ////////////////////////////////
 //Frontpage
-router.post('/signup', (req, res) =>{
+router.post('/signup', async (req, res) =>{
     
     const data = req.body;
     
-    create('users', data);
-   
-
-    //Database query goes here
-    res.send("account created");
+    const what = await create('users', data);
+    const resStr = what ? "account created" : "username already exists";
+    
+    res.send(resStr);    
 });
 
-router.get('/login', (req, res) =>{
+router.post('/login', async (req, res) =>{
     
     const data = req.body;
-    
-    //Database query goes here
+    const fields = {username:1,password:1}
+    const coll = "users"
+    let existingUser
 
-    res.send("data received");
+    try {
+        existingUser = await read(coll,data,fields)    
+    } catch(e) {
+        console.error(e);
+    }
+    let token
+    if (existingUser.username == data.username && existingUser.password == data.password) {
+        try {token = jwt.sign(
+                {userId: existingUser._id, username:existingUser.username},
+                process.env.TOKENSECRET,
+                {expiresIn:"1h"}
+            
+            )
+        } catch (e) {
+            console.error(e)
+        }
+
+        res.json({
+            Success: true,
+            data: {
+                _id: existingUser._id,
+                username: existingUser.username,
+                token: token
+            }    
+        });
+    }
 });
 
 ////////////////////////////////
@@ -58,6 +86,26 @@ router.post('/account/delete', (req, res) =>{
         res.send("account deleted");
     }
     catch(e) {
+        console.error(e);
+    }
+});
+
+router.post('/account/info', async(req, res) => {
+
+    const data = req.body;
+    // const dobj = {
+    //     username: data.username ? data.username : null,
+    //     _id: 
+    // }
+
+    try {
+        //read account info
+        const coll = 'users';
+        const userFields = {tokens:1,username:1}
+        
+        const userdata = await read(coll,data,userFields)
+        res.send(userdata)
+    } catch(e) {
         console.error(e);
     }
 });

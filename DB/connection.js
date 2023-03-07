@@ -34,8 +34,15 @@ async function checkColl(collection) {
 //create operation **Needs input validation**
 async function create(collection,data,) {
     await checkColl(collection);
+
+    if (!read("users",data,{username: 1})){
+        await db.collection("users").insertOne(data);
+        return true;
+    } else {
+        
+        return false;
+    }
     
-    await db.collection("users").insertOne(data)
 }
 
 async function del(collection, userid) {
@@ -63,13 +70,25 @@ async function update(collection,userid,parameter,data) {
     );
 }
 
-
 //read operation 
-async function read(collection,userid) {
+async function read(collection, identifier, fields) {
     await checkColl(collection);
 
-    let oid = new ObjectId(userid);
-    let result = await db.collection("users").findOne({ _id: oid });
+    let iobject = null;
+    let oid = null;
+    switch(Object.keys(identifier)[0]) {
+
+        case "username":
+            iobject = {username: identifier.username};
+            break;
+
+        case "userid":
+            oid = new ObjectId(identifier.userid);
+            iobject = {_id:oid};
+            break;
+    }
+    
+    let result = await db.collection("users").findOne(iobject, {projection:fields});
     
     return result;
 }
