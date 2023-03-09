@@ -36,8 +36,10 @@ async function create(collection,data,) {
     await checkColl(collection);
 
     if (!(await read("users",data,{username: 1}))){
-        await db.collection("users").insertOne(data);
-        return true;
+        response = await db.collection("users").insertOne(data);
+        if (!response.acknowledged) throw new Error; 
+        let user = {username: data.username, _id: response.insertedId}
+        return user
     } else {
         return false;
     }
