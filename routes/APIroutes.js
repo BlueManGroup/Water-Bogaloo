@@ -3,6 +3,8 @@ const {create, del, read, update} = require('../DB/connection');
 const jwt = require("../Tokens/JWT")
 require('dotenv').config()
 
+var ObjectId = require('mongodb').ObjectId;
+
 
 ////////////////////////////////
 //Frontpage
@@ -39,6 +41,10 @@ router.post('/login', async (req, res) =>{
         user = await read(coll,data,fields)    
     } catch(e) {
         console.error(e);
+        res.json({
+            status: "Error: Check username or password"
+        })
+        return
     }
 
     let token;
@@ -46,18 +52,23 @@ router.post('/login', async (req, res) =>{
     if (user.username == data.username && user.password == data.password) {
         try {
             token = jwt.createToken(user);
+            //respond with json telling client login was A-OK 
+            res.json({
+                Success: true,
+                data: {
+                    _id: user._id,
+                    username: user.username,
+                    token: token
+                }
+        })  
         } catch (e) {
             console.error(e);
+            res.json({
+                status: "Error: failed to create user"
+            })
         }
-        //respond with json telling client login was A-OK
-        res.json({
-            Success: true,
-            data: {
-                _id: user._id,
-                username: user.username,
-                token: token
-            }    
-        });
+        //respond with json telling client login was A-OK  
+        
     }
 });
 
@@ -73,12 +84,26 @@ router.post('/account/updatePassword', async(req, res) =>{
         return
     }
 
-    result = await read("users",data.userid,"password");
+    let user = await jwt.decodeToken(data.token);
+
+    let userObj = {
+        "username": user.username,
+        "userid": user.userId
+    }
+    let result
+    try{
+        result = await read("users",userObj,{"password": 1});
+    } catch(e) {
+        console.error(e)
+        res.json({
+            status: "Error: failed to update password"
+        })
+    }
 
     // if user input correct old password, change it to the new one
     if (data.password_old == result.password) {
         try {
-            update("users",data.userid,"password",data.password_new);
+            update("users",user.userId,"password",data.password_new);
         
             res.json({
                 validToken: true,

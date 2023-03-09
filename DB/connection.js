@@ -38,7 +38,10 @@ async function create(collection,data,) {
     await checkColl(collection);
 
     if (!(await read("users",data,{username: 1}))){
+        
         response = await db.collection("users").insertOne(data);
+
+
         if (!response.acknowledged) throw new Error; 
         let user = {username: data.username, _id: response.insertedId}
         return user
@@ -61,17 +64,14 @@ async function update(collection,userid,parameter,data) {
     let oid = new ObjectId(userid);
 
     await checkColl(collection);
-    await db.collection("users").updateOne(
+    
+    try {await db.collection("users").updateOne(
         {_id: oid},
-        {$set: {[parameter]: data}},
-        (err, result) => {
-            if (err) {
-                console.error(err);
-            } else {
-                console.log(result);
-            }  
+        {$set: {[parameter]: data}})
+        } catch(e) {
+            console.error(e)
+            return({e: "error: update failed"})
         }
-    );
 }
 
 //read operation 
@@ -91,10 +91,13 @@ async function read(collection, identifier, fields) {
             iobject = {_id:oid};
             break;
     }
-    
-    let result = await db.collection("users").findOne(iobject, {projection:fields});
-    
-    return result;
+    try {
+        let result = await db.collection("users").findOne(iobject, {projection:fields});
+        return result;
+    } catch (e) {
+        console.error(e)
+        return({e: "error: read failed"})
+    }
 }
 
 
