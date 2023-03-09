@@ -10,8 +10,8 @@ router.post('/signup', async (req, res) =>{
     
     const data = req.body;
     
-    const what = await create('users', data);
-    const resStr = what ? "account created" : "username already exists";
+    const accCreated = await create('users', data);
+    const resStr = accCreated ? "account created" : "user already exists";
     
     res.send(resStr);    
 });

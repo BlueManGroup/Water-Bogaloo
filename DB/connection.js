@@ -35,11 +35,10 @@ async function checkColl(collection) {
 async function create(collection,data,) {
     await checkColl(collection);
 
-    if (!read("users",data,{username: 1})){
+    if (!(await read("users",data,{username: 1}))){
         await db.collection("users").insertOne(data);
         return true;
     } else {
-        
         return false;
     }
     
