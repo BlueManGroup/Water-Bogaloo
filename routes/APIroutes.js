@@ -63,15 +63,6 @@ router.post('/login', async (req, res) =>{
 
 ////////////////////////////////
 //Account routes
-router.post('/account/logout', (req, res) =>{
-    
-    const data = req.body;
-    
-    //Database query goes here
-
-    res.send("data received");
-});
-
 router.post('/account/updatePassword', async(req, res) =>{
     data = req.body;
     result = await read("users",data.userid,"password");
