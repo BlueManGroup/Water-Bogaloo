@@ -1,4 +1,4 @@
-const { sign, verify } = require("jsonwebtoken");
+const { sign, verify, decode } = require("jsonwebtoken");
 
 const secret = process.env.TOKENSECRET
 
@@ -20,7 +20,14 @@ const verifyToken = (token) => {
     return verification ? true : false;
 }
 
+const decodeToken = (token) => {
+    let decodedToken = decode(token);
+    
+    return decodedToken
+} 
+
 module.exports = { 
     createToken, 
-    verifyToken
+    verifyToken,
+    decodeToken
  }

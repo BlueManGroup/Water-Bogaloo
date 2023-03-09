@@ -1,5 +1,7 @@
 const MongoClient = require('mongodb').MongoClient;
 var ObjectId = require('mongodb').ObjectId;
+const jwt = require('../Tokens/JWT');
+
 require('dotenv').config()
 
 //.env variables
@@ -46,10 +48,11 @@ async function create(collection,data,) {
     
 }
 
-async function del(collection, userid) {
+async function del(collection, userToken) {
     await checkColl(collection);
 
-    let oid = new ObjectId(userid);
+    let userId = jwt.decodeToken(userToken.token).userId;
+    let oid = new ObjectId(userId);
     await db.collection(collection).deleteOne({_id: oid});    
 }
 

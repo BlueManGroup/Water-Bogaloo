@@ -62,47 +62,100 @@ router.post('/login', async (req, res) =>{
 });
 
 ////////////////////////////////
-//Account routes
+//Account routes, needs token validation to be used
 router.post('/account/updatePassword', async(req, res) =>{
     data = req.body;
+
+    if(!jwt.verifyToken(data.token)) {
+        res.json({
+            validToken: false
+        })
+        return
+    }
+
     result = await read("users",data.userid,"password");
 
     // if user input correct old password, change it to the new one
     if (data.password_old == result.password) {
-        update("users",data.userid,"password",data.password_new);
-        res.send("password changed");
+        try {
+            update("users",data.userid,"password",data.password_new);
+        
+            res.json({
+                validToken: true,
+                status: "password changed"
+            });
+        } catch(e) {
+            res.json({
+                validToken: true,
+                status: "error changing password"
+            });
+        }
+        
     } else {
-        throw new Error("invalid password")
+        res.json({
+            validToken: true,
+            status: "invalid password"
+        });
     }
 });
 
 router.post('/account/delete', (req, res) =>{
     
     const data = req.body;
+    
+    if (!jwt.verifyToken(data.token)) {
+        res.json({
+            validToken: false
+        });
+        return;
+    }
+
     try {
         //update coll to take from data instead of being hardcoded
         const coll = 'users';
         del(coll, data);
         
-        res.send("account deleted");
+        res.json({
+            validToken: true,
+            status: "account deleted"
+        });
     }
     catch(e) {
-        console.error(e);
+        res.json({
+            validToken: true,
+            status: "Error"
+        })
     }
 });
 
 router.post('/account/info', async(req, res) => {
 
     const data = req.body;
+    
+    if(!jwt.verifyToken(data.token)) {
+        res.json({
+            validToken: false
+        });
+        return;
+    }
+    
     try {
         // read account info // select what fields to read from mongo document
         const coll = 'users';
         const userFields = {tokens:1,username:1}
         
         const userdata = await read(coll,data,userFields)
-        res.send(userdata)
+        res.json({
+            validToken: true,
+            status: "Read completed",
+            username: userdata.username,
+            tokens: userdata.tokens
+        })
     } catch(e) {
-        console.error(e);
+        res.json({
+            validToken: true,
+            status: "error reading account info"
+        });
     }
 });
 
