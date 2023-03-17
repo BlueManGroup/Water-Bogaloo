@@ -23,6 +23,8 @@
 hs_err_pid*
 replay_pid*
 
-node_module**/
+
+node_modules**/
+
 .env
 
