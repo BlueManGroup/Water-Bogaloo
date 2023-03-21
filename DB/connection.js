@@ -51,6 +51,7 @@ async function create(collection,data,) {
     
 }
 
+//Delete operation (curently only supports deleting own user. May be changed for admin panel)
 async function del(collection, userToken) {
     await checkColl(collection);
 
