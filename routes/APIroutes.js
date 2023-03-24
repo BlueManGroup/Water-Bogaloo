@@ -191,7 +191,7 @@ router.post('/account/info', async(req, res) => {
 //show user rights:
 
 //update user role:
-router.post('/director/updateuserrole'), async(req,res) => {
+router.post('/director/updateuserrole', async(req,res) => {
     const data = req.body;
     let coll = 'users';
     
@@ -235,5 +235,5 @@ router.post('/director/updateuserrole'), async(req,res) => {
 
 
 }
-
+)
 module.exports = router;
