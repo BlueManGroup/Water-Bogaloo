@@ -38,13 +38,19 @@ async function create(collection,data,) {
     await checkColl(collection);
 
     if (!(await read("users",data,{username: 1}))){
+        let userObj = {
+            username: data.username,
+            password: data.password,
+            tokens: 0,
+            role: "user"
+        };
         
-        response = await db.collection("users").insertOne(data);
+        response = await db.collection("users").insertOne(userObj);
 
 
         if (!response.acknowledged) throw new Error; 
-        let user = {username: data.username, _id: response.insertedId}
-        return user
+        let user = {username: data.username, _id: response.insertedId};
+        return user;
     } else {
         return false;
     }
