@@ -205,11 +205,10 @@ router.post('/director/updateuserrole', async(req,res) => {
     }
 
     let decodedToken = jwt.decodeToken(data.token);
-    let role = await read(coll,{username: decodedToken.username},{role:1});
+    let initiatorObj = await read(coll,{username: decodedToken.username},{role:1});
     let userObj = await read(coll,{username: data.username},{role:1, username:1});
     //Catch errors
-    console.log(role);
-    if(!(role == "director")) {
+    if(!(initiatorObj.role == "director")) {
         res.json({
             validRole: false,
             status: "insufficient rights"
