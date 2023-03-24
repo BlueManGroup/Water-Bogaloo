@@ -214,22 +214,26 @@ router.post('/director/updateuserrole', async(req,res) => {
             validRole: false,
             status: "insufficient rights"
         });
+        return;
     }   
 
     if(userObj.role == data.updatedRole) {
         res.json({
             status: "User already has this role"
-        })
+        });
+        return;
     }
 
     if(!await update(coll,userObj._id,"role",data.updatedRole)) {
         res.json({
             status: "success"
-        })
+        });
+        return;
     } else {
         res.json({
             status: "error updating role"
-        })
+        });
+        return;
     }
 
 

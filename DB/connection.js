@@ -102,7 +102,6 @@ async function read(collection, identifier, fields) {
     console.log(iobject);
     try {
         let result = await db.collection(collection).findOne(iobject, {projection:fields});
-        console.log(result);
         return result;
     } catch (e) {
         console.error(e)
