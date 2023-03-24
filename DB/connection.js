@@ -99,7 +99,7 @@ async function read(collection, identifier, fields) {
             iobject = {_id:oid};
             break;
     }
-    console.log(iobject);
+
     try {
         let result = await db.collection(collection).findOne(iobject, {projection:fields});
         return result;
