@@ -92,7 +92,7 @@ async function read(collection, identifier, fields) {
 
         case "username":
             console.log("identifier = ", identifier);
-            console("identifer.username = ", identifier.username);
+            console.log("identifer.username = ", identifier.username);
             iobject = {username: identifier.username};
             break;
 
