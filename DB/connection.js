@@ -101,8 +101,7 @@ async function read(collection, identifier, fields) {
     }
     console.log(iobject);
     try {
-        let result = await db.collection("users").findOne(iobject, {projection:fields});
-        console.log(await db.collection("users").findOne(iobject, {projection:fields}));
+        let result = await db.collection("users").findOne(iobject, );
         console.log(result);
         return result;
     } catch (e) {
