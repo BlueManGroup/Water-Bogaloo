@@ -89,15 +89,15 @@ router.post('/account/updatePassword', async(req, res) =>{
     let userObj = {
         "username": user.username,
         "userid": user.userId
-    }
-    let result
+    };
+    let result;
     try{
         result = await read("users",userObj,{"password": 1});
     } catch(e) {
         console.error(e)
         res.json({
             status: "Error: failed to update password"
-        })
+        });
     }
 
     // if user input correct old password, change it to the new one
@@ -183,5 +183,57 @@ router.post('/account/info', async(req, res) => {
         });
     }
 });
+
+
+//###################################################
+//User rights Routes:
+
+//show user rights:
+
+//update user role:
+router.post('/director/updateuserrole'), async(req,res) => {
+    const data = req.body;
+    let coll = 'users';
+    
+    //Token validation
+    if(!jwt.verifyToken(data.token)) {
+        res.json({
+            validToken: false,
+            status: "invalid token"
+        });
+        return;
+    }
+
+    let decodedToken = jwt.decodeToken(data.token);
+    let role = await read(coll,decodedToken.username,{role:1});
+    let userObj = await read(coll,data.username,{role:1});
+
+    //Catch errors
+
+    if(!(role == "director")) {
+        res.json({
+            validRole: false,
+            status: "insufficient rights"
+        });
+    }   
+
+    if(userObj.role == data.updatedRole) {
+        res.json({
+            status: "User already has this role"
+        })
+    }
+
+    if(!await update(coll,userObj._id,"role",data.updatedRole)) {
+        res.json({
+            status: "success"
+        })
+    } else {
+        res.json({
+            status: "error updating role"
+        })
+    }
+
+
+}
 
 module.exports = router;
