@@ -91,6 +91,8 @@ async function read(collection, identifier, fields) {
     switch(Object.keys(identifier)[0]) {
 
         case "username":
+            console.log("identifier = ", identifier);
+            console("identifer.username = ", identifier.username);
             iobject = {username: identifier.username};
             break;
 
