@@ -215,8 +215,7 @@ router.post('/director/updateuserrole', async(req,res) => {
         });
         return;
     }   
-    console.log(userObj.role);
-    console.log(data.updatedRole);
+
     if(userObj.role == data.updatedRole) {
         res.json({
             status: "User already has this role"
