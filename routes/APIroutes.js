@@ -208,7 +208,7 @@ router.post('/director/updateuserrole', async(req,res) => {
     let role = await read(coll,{username: decodedToken.username},{role:1});
     let userObj = await read(coll,{username: data.username},{role:1, username:1});
     //Catch errors
-    console.log(!(role == "director"));
+    console.log(role);
     if(!(role == "director")) {
         res.json({
             validRole: false,
