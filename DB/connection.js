@@ -91,6 +91,7 @@ async function read(collection, identifier, fields) {
     switch(Object.keys(identifier)[0]) {
 
         case "username":
+            console.log(identifier.username);
             iobject = {username: identifier.username};
             break;
 
@@ -101,6 +102,7 @@ async function read(collection, identifier, fields) {
     }
     try {
         let result = await db.collection("users").findOne(iobject, {projection:fields});
+        console.log(result);
         return result;
     } catch (e) {
         console.error(e)

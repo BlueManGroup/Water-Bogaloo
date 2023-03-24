@@ -206,7 +206,6 @@ router.post('/director/updateuserrole', async(req,res) => {
 
     let decodedToken = jwt.decodeToken(data.token);
     let role = await read(coll,{username: decodedToken.username},{role:1});
-    console.log(data);
     let userObj = await read(coll,{username: data.username},{role:1});
     console.log(userObj);
     //Catch errors
