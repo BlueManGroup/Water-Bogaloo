@@ -109,7 +109,20 @@ async function read(collection, identifier, fields) {
     }
 }
 
+async function readall(collection,fields) {
+    await checkColl(collection)
+
+    try {
+        let result = await db.collection(collection).find({},{projection:fields}).toArray()
+        return result
+    } catch (e) {
+        console.error(e)
+        return({e: "error: read failed"})
+    }
+
+}
+
 
 module.exports = {
-    create, read, del, update
+    create, read, del, update, readall
 };
