@@ -1,5 +1,5 @@
 const router = require('express').Router();
-const {create, del, read, update} = require('../DB/connection');
+const {create, del, read,readall, update} = require('../DB/connection');
 const jwt = require("../Tokens/JWT")
 require('dotenv').config()
 
@@ -238,4 +238,33 @@ router.post('/director/updateuserrole', async(req,res) => {
 
 }
 )
+router.post('/director/showall', async (req,res) => {
+    const data = req.body
+    const coll = "users"
+    const userFields = {username:1,role:1}
+    let decodedToken = jwt.decodeToken(data.token)
+
+    let initiatorObj = await read(coll,{username: decodedToken.username},{role:1});
+
+    if(!jwt.verifyToken(data.token)) {
+        res.json({
+            validToken: false,
+            status: "invalid token"
+        });
+        return;
+    }
+
+    if(!(initiatorObj.role == "director")) {
+        res.json({
+            validRole: false,
+            status: "insufficient rights"
+        });
+        return;
+    }  
+
+    let result = await readall(coll,userFields)
+    res.json(result)
+
+})
+
 module.exports = router;
