@@ -73,14 +73,15 @@ async function createTokens(user, amount) {
 
         for (let i = 0; i < amount; i++) {
             let tokenObj = {}
-            tokenRes = await db.collection("tokens").insertOne(tokenObj);
-            userRes = await db.collection("users").updateOne(
+            let tokenRes = await db.collection("tokens").insertOne(tokenObj);
+            let userRes = await db.collection("users").updateOne(
                 { _id: userObj._id },
                 { $push: { tokens: tokenRes.insertedId }}
                 );
             tokens.push(tokenRes.insertedId);
         }
-        console.log("got here");
+
+
         return tokens;
     } catch(e) {
         console.error(e);
