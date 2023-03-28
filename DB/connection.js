@@ -43,7 +43,7 @@ async function createUser(data) {
         let userObj = {
             username: data.username,
             password: data.password,
-            tokens: [null],
+            tokens: [{}],
             role: "user"
         };
         
