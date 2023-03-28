@@ -21,14 +21,15 @@ const createToken = (user) => {
 
 const verifyToken = (token) => {
     // verify token and assign to variable
+    let verification;
     try {
-        let verification = verify(token, secret);
+        verification = verify(token, secret);
     } catch (e) {
         console.error(e)
-        return false
+        verification = false;
     }
     // return true or false based on whether or not the token was validated
-    return verification ? true : false;
+    return verification ? true: false;
 }
 
 const decodeToken = (token) => {
