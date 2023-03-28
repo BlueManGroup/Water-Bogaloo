@@ -43,7 +43,7 @@ async function createUser(data) {
         let userObj = {
             username: data.username,
             password: data.password,
-            tokens: [],
+            tokens: [null],
             role: "user"
         };
         
@@ -66,7 +66,7 @@ async function createTokens(user, amount) {
     if (!userObj) {
         return "invalid user";
     }
-
+    console.log("read user");
     // currently empty, only want an id to know that this token exists in mongodb
     try {
         // list of added token ids
@@ -75,9 +75,10 @@ async function createTokens(user, amount) {
         for (let i = 0; i < amount; i++) {
             let tokenObj = {}
             tokenRes = await db.collection("tokens").insertOne(tokenObj);
+            console.log(tokenRes);
             userRes = await db.collection("users").updateOne(
                 { _id: user._id },
-                { $push: { tokens: tokenRes }}
+                { $push: { tokens: tokenRes.insertedId }}
                 );
             tokens.push(tokenRes.insertedId);
         }
