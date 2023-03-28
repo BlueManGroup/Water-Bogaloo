@@ -12,7 +12,7 @@ router.post('/signup', async (req, res) =>{
     const data = req.body;
     
     // create user
-    const user = await create('users', data);
+    const user = await createUser(data);
 
     // return string based on whether or not account was created
     let resStr
