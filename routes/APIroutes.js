@@ -1,5 +1,5 @@
 const router = require('express').Router();
-const {create, del, read, update} = require('../DB/connection');
+const {create, del, read,readall, update} = require('../DB/connection');
 const jwt = require("../Tokens/JWT")
 require('dotenv').config()
 
@@ -89,15 +89,15 @@ router.post('/account/updatePassword', async(req, res) =>{
     let userObj = {
         "username": user.username,
         "userid": user.userId
-    }
-    let result
+    };
+    let result;
     try{
         result = await read("users",userObj,{"password": 1});
     } catch(e) {
         console.error(e)
         res.json({
             status: "Error: failed to update password"
-        })
+        });
     }
 
     // if user input correct old password, change it to the new one
@@ -183,5 +183,88 @@ router.post('/account/info', async(req, res) => {
         });
     }
 });
+
+
+//###################################################
+//User rights Routes:
+
+//show user rights:
+
+//update user role:
+router.post('/director/updateuserrole', async(req,res) => {
+    const data = req.body;
+    let coll = 'users';
+    
+    //Token validation
+    if(!jwt.verifyToken(data.token)) {
+        res.json({
+            validToken: false,
+            status: "invalid token"
+        });
+        return;
+    }
+
+    let decodedToken = jwt.decodeToken(data.token);
+    let initiatorObj = await read(coll,{username: decodedToken.username},{role:1});
+    let userObj = await read(coll,{username: data.username},{role:1, username:1});
+    //Catch errors
+    if(!(initiatorObj.role == "director")) {
+        res.json({
+            validRole: false,
+            status: "insufficient rights"
+        });
+        return;
+    }   
+
+    if(userObj.role == data.updatedRole) {
+        res.json({
+            status: "User already has this role"
+        });
+        return;
+    }
+
+    if(!await update(coll,userObj._id,"role",data.updatedRole)) {
+        res.json({
+            status: "success"
+        });
+        return;
+    } else {
+        res.json({
+            status: "error updating role"
+        });
+        return;
+    }
+
+
+}
+)
+router.post('/director/showall', async (req,res) => {
+    const data = req.body
+    const coll = "users"
+    const userFields = {username:1,role:1}
+    let decodedToken = jwt.decodeToken(data.token)
+
+    if(!jwt.verifyToken(data.token)) {
+        res.json({
+            validToken: false,
+            status: "invalid token"
+        });
+        return;
+    }
+
+    let initiatorObj = await read(coll,{username: decodedToken.username},{role:1});
+
+    if(!(initiatorObj.role == "director")) {
+        res.json({
+            validRole: false,
+            status: "insufficient rights"
+        });
+        return;
+    }  
+
+    let result = await readall(coll,userFields)
+    res.json(result)
+
+})
 
 module.exports = router;

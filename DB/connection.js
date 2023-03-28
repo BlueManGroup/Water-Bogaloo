@@ -38,13 +38,19 @@ async function create(collection,data,) {
     await checkColl(collection);
 
     if (!(await read("users",data,{username: 1}))){
+        let userObj = {
+            username: data.username,
+            password: data.password,
+            tokens: 0,
+            role: "user"
+        };
         
-        response = await db.collection("users").insertOne(data);
+        response = await db.collection("users").insertOne(userObj);
 
 
         if (!response.acknowledged) throw new Error; 
-        let user = {username: data.username, _id: response.insertedId}
-        return user
+        let user = {username: data.username, _id: response.insertedId};
+        return user;
     } else {
         return false;
     }
@@ -93,8 +99,9 @@ async function read(collection, identifier, fields) {
             iobject = {_id:oid};
             break;
     }
+
     try {
-        let result = await db.collection("users").findOne(iobject, {projection:fields});
+        let result = await db.collection(collection).findOne(iobject, {projection:fields});
         return result;
     } catch (e) {
         console.error(e)
@@ -102,7 +109,20 @@ async function read(collection, identifier, fields) {
     }
 }
 
+async function readall(collection,fields) {
+    await checkColl(collection)
+
+    try {
+        let result = await db.collection(collection).find({},{projection:fields}).toArray()
+        return result
+    } catch (e) {
+        console.error(e)
+        return({e: "error: read failed"})
+    }
+
+}
+
 
 module.exports = {
-    create, read, del, update
+    create, read, del, update, readall
 };
