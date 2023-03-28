@@ -167,7 +167,7 @@ async function deleteUser(userId) {
     }
 }
 
-async function deleteToken(userId, tokenId) {
+async function deleteToken(userId, tokenArr) {
 
     let result = {
         tokenRes: null,
@@ -175,11 +175,11 @@ async function deleteToken(userId, tokenId) {
     }
 
     try {
-        result['tokenRes'] = await db.collection("tokens").deleteOne({ _id: tokenId });
+        result['tokenRes'] = await db.collection("tokens").deleteOne({ _id: tokenArr[0] });
         console.log(result);
         result['userRes'] = await db.collection("users").updateOne(
             {_id: userId},
-            { $pull: { tokens: { $eq: tokens[0]}, $slice: 1} }
+            { $pull: { tokens: { $eq: tokenArr[0]}, $slice: 1} }
         );
         console.log(userId);
         return result;

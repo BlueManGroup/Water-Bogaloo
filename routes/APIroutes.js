@@ -319,7 +319,7 @@ router.post('/tokens/redeem', async(req, res) => {
         return;
     }
 
-    let result = await deleteToken(userObj._id, userObj.tokens[0]);
+    let result = await deleteToken(userObj._id, userObj.tokens);
     res.json({result});
 });
 
