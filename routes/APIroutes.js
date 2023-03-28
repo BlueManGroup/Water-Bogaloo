@@ -293,7 +293,7 @@ router.post('/tokens/create', async (req, res) => {
         });
         return;
     }
-    
+
     let result = await createTokens(data.username, data.amount);
     res.json({result});
 });
@@ -318,6 +318,7 @@ router.post('/tokens/redeem', async(req, res) => {
         });
         return;
     }
+    console.log(userObj);
 
     let result = await deleteToken(userObj._id, userObj.tokens[0]);
     res.json({result});
