@@ -138,8 +138,8 @@ router.post('/account/delete', (req, res) =>{
 
     try {
         //update coll to take from data instead of being hardcoded
-        const coll = 'users';
-        del(coll, data);
+        userId = jwt.decodeToken(data.token).userId;
+        deleteUser(userId);
         
         res.json({
             validToken: true,

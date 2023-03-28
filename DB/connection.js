@@ -157,10 +157,15 @@ async function updateUser(userid,parameter,data) {
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 //Delete user operation (curently only supports deleting own user. May be changed for admin panel)
-async function deleteUser(userToken) {
-    let userId = jwt.decodeToken(userToken.token).userId;
-    let oid = new ObjectId(userId);
-    await db.collection("users").deleteOne({_id: oid});    
+async function deleteUser(userId) {
+    try {
+        let oid = new ObjectId(userId);
+        await db.collection("users").deleteOne({_id: oid});  
+        return "success";  
+    } catch(e) {
+        console.error(e);
+        return e;
+    }
 }
 
 async function deleteToken(userId) {
