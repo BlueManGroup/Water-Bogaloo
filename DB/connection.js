@@ -67,19 +67,18 @@ async function createTokens(user, amount) {
     }
 
     // currently empty, only want an id to know that this token exists in mongodb
-    let tokenObj = {}
-
     try {
         // list of added token ids
         tokens = []
 
         for (let i = 0; i < amount; i++) {
+            let tokenObj = {}
             tokenRes = await db.collection("tokens").insertOne(tokenObj);
             userRes = await db.collection("users").updateOne(
                 { _id: user._id },
                 { $push: { tokens: tokenRes }}
                 );
-
+            console.log(tokenRes);
             tokens.push(tokenRes.insertedId);
         }
 
