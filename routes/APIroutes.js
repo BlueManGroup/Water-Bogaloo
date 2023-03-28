@@ -244,8 +244,6 @@ router.post('/director/showall', async (req,res) => {
     const userFields = {username:1,role:1}
     let decodedToken = jwt.decodeToken(data.token)
 
-    let initiatorObj = await read(coll,{username: decodedToken.username},{role:1});
-
     if(!jwt.verifyToken(data.token)) {
         res.json({
             validToken: false,
@@ -253,6 +251,8 @@ router.post('/director/showall', async (req,res) => {
         });
         return;
     }
+
+    let initiatorObj = await read(coll,{username: decodedToken.username},{role:1});
 
     if(!(initiatorObj.role == "director")) {
         res.json({
