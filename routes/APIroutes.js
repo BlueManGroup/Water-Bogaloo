@@ -1,5 +1,5 @@
 const router = require('express').Router();
-const {create, del, read,readall, update} = require('../DB/connection');
+const {create, del, read,readall, update, deleteToken} = require('../DB/connection');
 const jwt = require("../Tokens/JWT")
 require('dotenv').config()
 
@@ -254,6 +254,7 @@ router.post('/director/showall', async (req,res) => {
 
     if(!(initiatorObj.role == "director")) {
         res.json({
+            validToken: true,
             validRole: false,
             status: "insufficient rights"
         });
@@ -297,16 +298,28 @@ router.post('/tokens/create', async (req, res) => {
 });
 
 router.post('/tokens/redeem', async(req, res) => {
+    const data = req.body;
     
     if(!jwt.verifyToken(data.token)) {
         res.json({
-            validToken: false
+            validToken: false,
+            status: "invalid token"
         });
         return;
     } 
-    
-    
-    
+
+    let decodedToken = jwt.decodeToken(data.token);
+    let userObj = await readUser({username: decodedToken.username}, {_id: 1, tokens: 1})
+    if (userObj.tokens.length < 1) {
+        res.json({
+            moreThanZeroTokens: false,
+            status: "User has no drink tokens"
+        });
+        return;
+    }
+
+    let result = await deleteToken(userObj._id, userObj.tokens[0]);
+    res.json({result});
 });
 
 module.exports = router;

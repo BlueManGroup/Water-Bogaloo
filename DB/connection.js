@@ -168,18 +168,15 @@ async function deleteUser(userId) {
     }
 }
 
-async function deleteToken(userId) {
-    let redeemedToken = await readUser({userid: userId}, {tokens: 1})[0];
-    if (!redeemedToken) {
-        return "user has no tokens";
-    }
+async function deleteToken(userId, tokenId) {
+    
     let result = {
         tokenRes: null,
         userRes: null
     }
 
     try {
-        result[tokenRes] = await db.collection("tokens").deleteOne(redeemedToken);
+        result[tokenRes] = await db.collection("tokens").deleteOne(tokenId);
         result[userRes] = await db.collection("users").updateOne(
             {_id: userId},
             { $pull: { tokens: { $eq: tokens[0]}, $slice: 1} }
