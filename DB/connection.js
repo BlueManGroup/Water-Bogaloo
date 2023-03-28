@@ -175,7 +175,7 @@ async function deleteToken(userId, tokenId) {
     }
 
     try {
-        result['tokenRes'] = await db.collection("tokens").deleteOne(tokenId);
+        result['tokenRes'] = await db.collection("tokens").deleteOne({ _id: tokenId });
         console.log(result);
         result['userRes'] = await db.collection("users").updateOne(
             {_id: userId},

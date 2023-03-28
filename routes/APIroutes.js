@@ -318,7 +318,6 @@ router.post('/tokens/redeem', async(req, res) => {
         });
         return;
     }
-    console.log(userObj, "shit");
 
     let result = await deleteToken(userObj._id, userObj.tokens[0]);
     res.json({result});
