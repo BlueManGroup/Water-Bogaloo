@@ -282,10 +282,12 @@ router.post('/tokens/create', async (req, res) => {
         });
         return;
     }
+    console.log("verified jwt");
 
     // check if initiating user is director
     let decodedToken = jwt.decodeToken(data.token);
     let initObj = await readUser({username: decodedToken.username}, {role: 1});
+    console.log("read initiating user");
     if(!(initObj.role == "director")) {
         res.json({
             validRole: false,
@@ -293,6 +295,7 @@ router.post('/tokens/create', async (req, res) => {
         });
         return;
     }
+    console.log("checked the user's role");
     let result = await createTokens(data.username, data.amount);
     res.json({result});
 });

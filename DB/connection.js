@@ -61,6 +61,7 @@ async function createUser(data) {
 // Create token(s)
 // create x tokens and link them to user
 async function createTokens(user, amount) {
+    console.log("got to createTokens");
     let userObj = await readUser(user, {_id: 1});
     if (!userObj) {
         return "invalid user";
@@ -78,7 +79,6 @@ async function createTokens(user, amount) {
                 { _id: user._id },
                 { $push: { tokens: tokenRes }}
                 );
-            console.log(tokenRes);
             tokens.push(tokenRes.insertedId);
         }
 
