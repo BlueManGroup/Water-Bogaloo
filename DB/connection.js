@@ -33,6 +33,7 @@ async function checkColl(collection) {
     }
 }
 
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //..........................................................CREATE_FUNCTIONS.......................................................//
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -43,7 +44,7 @@ async function createUser(data) {
         let userObj = {
             username: data.username,
             password: data.password,
-            tokens: [{}],
+            tokens: [],
             role: "user"
         };
         
@@ -74,11 +75,9 @@ async function createTokens(user, amount) {
 
         for (let i = 0; i < amount; i++) {
             let tokenObj = {}
-            tokenRes = await db.collection("tokens").insertOne(tokenObj, function(err, test) {
-                console.log(test);
-            });
+            tokenRes = await db.collection("tokens").insertOne(tokenObj);
             userRes = await db.collection("users").updateOne(
-                { _id: user._id },
+                { _id: userObj._id },
                 { $push: { tokens: tokenRes.insertedId }}
                 );
             tokens.push(tokenRes.insertedId);
