@@ -32,19 +32,19 @@ router.post('/signup', async (req, res) =>{
 
 router.post('/login', async (req, res) =>{
     const data = req.body;
-    const fields = {username:1,password:1}
-    const coll = "users"
-    let user
+    const fields = {username:1,password:1};
+    const coll = "users";
+    let user;
 
     // checke if user exists
     try {
-        user = await read(coll,data,fields)    
+        user = await read(coll,data,fields);    
     } catch(e) {
         console.error(e);
         res.json({
             status: "Error: Check username or password"
         })
-        return
+        return;
     }
 
     let token;
@@ -236,13 +236,13 @@ router.post('/director/updateuserrole', async(req,res) => {
     }
 
 
-}
-)
+});
+
 router.post('/director/showall', async (req,res) => {
-    const data = req.body
-    const coll = "users"
-    const userFields = {username:1,role:1}
-    let decodedToken = jwt.decodeToken(data.token)
+    const data = req.body;
+    const coll = "users";
+    const userFields = {username:1,role:1};
+    let decodedToken = jwt.decodeToken(data.token);
 
     if(!jwt.verifyToken(data.token)) {
         res.json({
@@ -262,9 +262,16 @@ router.post('/director/showall', async (req,res) => {
         return;
     }  
 
-    let result = await readall(coll,userFields)
-    res.json(result)
+    let result = await readall(coll,userFields);
+    res.json(result);
 
+});
+
+
+//////////////////////////////////////////////////
+// Drink tokens
+router.post('/tokens/create', async (req, res) => {
+    
 })
 
 module.exports = router;
