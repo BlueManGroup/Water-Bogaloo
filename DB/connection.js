@@ -62,12 +62,10 @@ async function createUser(data) {
 // Create token(s)
 // create x tokens and link them to user
 async function createTokens(user, amount) {
-    console.log("got to createTokens");
     let userObj = await readUser(user, {_id: 1});
     if (!userObj) {
         return "invalid user";
     }
-    console.log("read user");
     // currently empty, only want an id to know that this token exists in mongodb
     try {
         // list of added token ids
@@ -82,7 +80,7 @@ async function createTokens(user, amount) {
                 );
             tokens.push(tokenRes.insertedId);
         }
-
+        console.log("got here");
         return tokens;
     } catch(e) {
         console.error(e);

@@ -293,7 +293,7 @@ router.post('/tokens/create', async (req, res) => {
         });
         return;
     }
-    console.log(data.username, data.amount);
+    
     let result = await createTokens(data.username, data.amount);
     res.json({result});
 });
