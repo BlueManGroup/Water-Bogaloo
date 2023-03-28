@@ -78,7 +78,7 @@ async function createTokens(user, amount) {
                 { _id: userObj._id },
                 { $push: { tokens: tokenRes.insertedId }}
                 );
-                console.log(userRes);
+                console.log(tokenRes);
             tokens.push(tokenRes.insertedId);
         }
 
