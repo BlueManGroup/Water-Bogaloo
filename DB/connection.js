@@ -155,7 +155,7 @@ async function updateUser(userid,parameter,data) {
 //..........................................................DELETE_FUNCTIONS.......................................................//
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-//Delete user operation (curently only supports deleting own user. May be changed for admin panel)
+//OBS: Delete user operation (curently only supports deleting own user. May be changed for admin panel)
 async function deleteUser(userId) {
     try {
         let oid = new ObjectId(userId);
@@ -176,7 +176,6 @@ async function deleteToken(userId, tokenArr) {
 
     try {
         result['tokenRes'] = await db.collection("tokens").deleteOne({ _id: tokenArr[0] });
-        console.log(result);
         result['userRes'] = await db.collection("users").updateOne(
             {_id: userId},
             { $pull: { tokens: { $eq: tokenArr[0]}, $slice: 1} }
