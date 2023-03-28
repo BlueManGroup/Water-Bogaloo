@@ -180,17 +180,13 @@ async function deleteToken(userId, tokenId) {
             {_id: userId},
             { $pull: { tokens: { $eq: tokens[0]}, $slice: 1} }
         );
-        console.log(await readUser({userid: userId}, {tokens: 1}));
-
+        console.log(userId);
         return result;
     } catch(e) {
         console.error(e);
         return e;
     }
 }
-
-
-
 
 
 
