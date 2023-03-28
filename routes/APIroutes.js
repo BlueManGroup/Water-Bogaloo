@@ -1,5 +1,5 @@
 const router = require('express').Router();
-const {create, del, read,readall, update, deleteToken} = require('../DB/connection');
+const {createUser, createTokens, readUser, deleteUser, deleteToken, updateUser, readall} = require('../DB/connection');
 const jwt = require("../Tokens/JWT")
 require('dotenv').config()
 
