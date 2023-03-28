@@ -61,8 +61,8 @@ async function createUser(data) {
 // Create token(s)
 // create x tokens and link them to user
 async function createTokens(user, amount) {
-    let user = await readUser(user, {_id: 1});
-    if (!user) {
+    let userObj = await readUser(user, {_id: 1});
+    if (!userObj) {
         return "invalid user";
     }
 
@@ -169,7 +169,7 @@ async function deleteUser(userId) {
 }
 
 async function deleteToken(userId, tokenId) {
-    
+
     let result = {
         tokenRes: null,
         userRes: null
