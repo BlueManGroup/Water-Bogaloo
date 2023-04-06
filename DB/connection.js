@@ -33,15 +33,18 @@ async function checkColl(collection) {
     }
 }
 
-//create operation **Needs input validation**
-async function create(collection,data,) {
-    await checkColl(collection);
 
-    if (!(await read("users",data,{username: 1}))){
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//..........................................................CREATE_FUNCTIONS.......................................................//
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+//create user **Needs input validation**
+async function createUser(data) {
+    if (!(await readUser(data, {username: 1}))){
         let userObj = {
             username: data.username,
             password: data.password,
-            tokens: 0,
+            tokens: [],
             role: "user"
         };
         
@@ -54,38 +57,45 @@ async function create(collection,data,) {
     } else {
         return false;
     }
-    
 }
 
-//Delete operation (curently only supports deleting own user. May be changed for admin panel
-//or token implementation)
-async function del(collection, userToken) {
-    await checkColl(collection);
+// Create token(s)
+// create x tokens and link them to user
+async function createTokens(user, amount) {
+    let userObj = await readUser({username: user}, {_id: 1});
+    if (!userObj) {
+        return "invalid user";
+    }
+    // currently empty, only want an id to know that this token exists in mongodb
+    try {
+        // list of added token ids
+        tokens = []
 
-    let userId = jwt.decodeToken(userToken.token).userId;
-    let oid = new ObjectId(userId);
-    await db.collection(collection).deleteOne({_id: oid});    
-}
-
-//Update operation **Needs input validation**
-async function update(collection,userid,parameter,data) {
-    let oid = new ObjectId(userid);
-
-    await checkColl(collection);
-    
-    try {await db.collection("users").updateOne(
-        {_id: oid},
-        {$set: {[parameter]: data}})
-        } catch(e) {
-            console.error(e)
-            return({e: "error: update failed"})
+        for (let i = 0; i < amount; i++) {
+            let tokenObj = {}
+            let tokenRes = await db.collection("tokens").insertOne(tokenObj);
+            await db.collection("users").updateOne(
+                { _id: userObj._id },
+                { $push: { tokens: tokenRes.insertedId }}
+                );
+            tokens.push(tokenRes.insertedId);
         }
+
+
+        return tokens;
+    } catch(e) {
+        console.error(e);
+        return e;
+    }
 }
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//..........................................................READ_FUNCTIONS.........................................................//
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 //read operation 
-async function read(collection, identifier, fields) {
-    await checkColl(collection);
-
+async function readUser(identifier, fields) {
     let iobject = null;
     let oid = null;
     switch(Object.keys(identifier)[0]) {
@@ -101,7 +111,7 @@ async function read(collection, identifier, fields) {
     }
 
     try {
-        let result = await db.collection(collection).findOne(iobject, {projection:fields});
+        let result = await db.collection("users").findOne(iobject, {projection:fields});
         return result;
     } catch (e) {
         console.error(e);
@@ -123,6 +133,63 @@ async function readall(collection,fields) {
 }
 
 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//..........................................................UPDATE_FUNCTIONS.......................................................//
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+//Update operation **Needs input validation**
+async function updateUser(userid,parameter,data) {
+    let oid = new ObjectId(userid);
+    
+    try {await db.collection("users").updateOne(
+        {_id: oid},
+        {$set: {[parameter]: data}})
+        } catch(e) {
+            console.error(e)
+            return({e: "error: update failed"})
+        }
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//..........................................................DELETE_FUNCTIONS.......................................................//
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+//OBS: Delete user operation (curently only supports deleting own user. May be changed for admin panel)
+async function deleteUser(userId) {
+    try {
+        let oid = new ObjectId(userId);
+        await db.collection("users").deleteOne({_id: oid});  
+        return "success";  
+    } catch(e) {
+        console.error(e);
+        return e;
+    }
+}
+
+async function deleteToken(userId, tokenArr) {
+
+    let result = {
+        tokenRes: null,
+        userRes: null
+    }
+
+    try {
+        result['tokenRes'] = await db.collection("tokens").deleteOne({ _id: tokenArr[0] });
+        result['userRes'] = await db.collection("users").updateOne(
+            {_id: userId},
+            { $pull: { tokens: { $eq: tokenArr[0]}, $slice: 1} }
+        );
+
+        return result;
+    } catch(e) {
+        console.error(e);
+        return e;
+    }
+}
+
+
+
 module.exports = {
-    create, read, del, update, readall
+    createUser, createTokens, readUser, deleteUser, deleteToken, updateUser, readall
 };
