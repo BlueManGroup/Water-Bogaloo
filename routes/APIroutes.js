@@ -265,13 +265,9 @@ router.post('/director/showall', async (req,res) => {
     let result = await readall("users", userFields);
     res.json(result);
 
-
+});
 //////////////////////////////////////////////////
 // Drink tokens
-router.post('/tokens/create', async (req, res) => {
-    
-})
-
 
 //TOKEN ROUTES¨
 // initiator users jwt
