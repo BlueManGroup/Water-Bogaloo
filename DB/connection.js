@@ -114,20 +114,20 @@ async function readUser(identifier, fields) {
         let result = await db.collection("users").findOne(iobject, {projection:fields});
         return result;
     } catch (e) {
-        console.error(e)
-        return({e: "error: read failed"})
+        console.error(e);
+        return({e: "error: read failed"});
     }
 }
 
 async function readall(collection,fields) {
-    await checkColl(collection)
+    await checkColl(collection);
 
     try {
-        let result = await db.collection(collection).find({},{projection:fields}).toArray()
-        return result
+        let result = await db.collection(collection).find({},{projection:fields}).toArray();
+        return result;
     } catch (e) {
-        console.error(e)
-        return({e: "error: read failed"})
+        console.error(e);
+        return({e: "error: read failed"});
     }
 
 }

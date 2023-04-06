@@ -43,7 +43,7 @@ router.post('/login', async (req, res) =>{
         res.json({
             status: "Error: Check username or password"
         })
-        return
+        return;
     }
 
     let token;
@@ -235,8 +235,8 @@ router.post('/director/updateuserrole', async(req,res) => {
     }
 
 
-}
-)
+});
+
 router.post('/director/showall', async (req,res) => {
     const data = req.body;
     const userFields = {username:1,role:1};
@@ -261,9 +261,15 @@ router.post('/director/showall', async (req,res) => {
         return;
     }  
 
+
     let result = await readall("users", userFields);
     res.json(result);
 
+
+//////////////////////////////////////////////////
+// Drink tokens
+router.post('/tokens/create', async (req, res) => {
+    
 })
 
 
