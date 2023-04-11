@@ -275,7 +275,11 @@ router.post('/director/showall', async (req,res) => {
 
 
     let result = await readall("users", userFields);
-    res.json(result);
+    
+    res.json({
+        success: true,
+        data: result
+    });
 
 });
 //////////////////////////////////////////////////
