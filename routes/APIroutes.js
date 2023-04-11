@@ -14,20 +14,21 @@ router.post('/signup', async (req, res) =>{
     // create user
     const user = await createUser(data);
 
-    // return string based on whether or not account was created
-    let resStr
-    let token
-    if(user) {
-        resStr = "account created";
-        token = jwt.createToken(user);  
-    } else {
-        resStr = "user already exists";
+    if (!user) {
+        res.json({
+            success: false,
+            response: "user already exists",
+        })
+        return;
     }
+    let token = jwt.createToken(user);  
     
     res.json({
-        response: resStr,
-        token: token
-    });    
+        success: true,
+        response: "account created",
+        token: token,
+    });
+    return;
 });
 
 router.post('/login', async (req, res) =>{
@@ -41,33 +42,35 @@ router.post('/login', async (req, res) =>{
     } catch(e) {
         console.error(e);
         res.json({
-            status: "Error: Check username or password"
+            success: false,
+            response: "invalid username or password"
         })
         return;
     }
 
     let token;
-    // check if username and password is correct
-    if (user.username == data.username && user.password == data.password) {
+    // check if password is correct
+    if (user.password == data.password) {
         try {
             token = jwt.createToken(user);
             //respond with json telling client login was A-OK 
             res.json({
-                Success: true,
+                success: true,
                 data: {
                     _id: user._id,
                     username: user.username,
                     token: token
                 }
-        })  
+        });
+        return;
         } catch (e) {
             console.error(e);
             res.json({
-                status: "Error: failed to create user"
-            })
-        }
-        //respond with json telling client login was A-OK  
-        
+                success: false,
+                response: "error: failed to create user"
+            });
+            return;
+        }        
     }
 });
 
@@ -80,9 +83,10 @@ router.post('/account/updatePassword', async(req, res) =>{
 
     if(!jwt.verifyToken(data.token)) {
         res.json({
-            validToken: false
-        })
-        return
+            success: false,
+            response: "invalid token"
+        });
+        return;
     }
 
     let user = await jwt.decodeToken(data.token);
@@ -97,7 +101,8 @@ router.post('/account/updatePassword', async(req, res) =>{
     } catch(e) {
         console.error(e)
         res.json({
-            status: "Error: failed to update password"
+            success: false,
+            response: "error updating password"
         });
     }
 
@@ -107,21 +112,24 @@ router.post('/account/updatePassword', async(req, res) =>{
             update("users",user.userId,"password",data.password_new);
         
             res.json({
-                validToken: true,
-                status: "password changed"
+                success: true,
+                response: "password changed"
             });
+            return;
         } catch(e) {
             res.json({
-                validToken: true,
-                status: "error changing password"
+                success: false,
+                response: "error changing password"
             });
+            return;
         }
         
     } else {
         res.json({
-            validToken: true,
+            success: false,
             status: "invalid password"
         });
+        return;
     }
 });
 
@@ -131,7 +139,8 @@ router.post('/account/delete', (req, res) =>{
     
     if (!jwt.verifyToken(data.token)) {
         res.json({
-            validToken: false
+            success: false,
+            response: "invalid token"
         });
         return;
     }
@@ -142,14 +151,14 @@ router.post('/account/delete', (req, res) =>{
         deleteUser(userId);
         
         res.json({
-            validToken: true,
-            status: "account deleted"
+            success: true,
+            response: "account deleted"
         });
     }
     catch(e) {
         res.json({
-            validToken: true,
-            status: "Error"
+            success: true,
+            response: "error deleting account"
         })
     }
 });
@@ -160,7 +169,8 @@ router.post('/account/info', async(req, res) => {
     
     if(!jwt.verifyToken(data.token)) {
         res.json({
-            validToken: false
+            success: false,
+            response: "invalid token"
         });
         return;
     }
@@ -171,15 +181,15 @@ router.post('/account/info', async(req, res) => {
         
         const userdata = await readUser(data,userFields)
         res.json({
-            validToken: true,
-            status: "Read completed",
+            success: true,
+            response: "account info read",
             username: userdata.username,
             tokens: userdata.tokens
         })
     } catch(e) {
         res.json({
-            validToken: true,
-            status: "error reading account info"
+            success: true,
+            response: "error reading account info"
         });
     }
 });
@@ -197,8 +207,8 @@ router.post('/director/updateuserrole', async(req,res) => {
     //Token validation
     if(!jwt.verifyToken(data.token)) {
         res.json({
-            validToken: false,
-            status: "invalid token"
+            success: false,
+            response: "invalid token"
         });
         return;
     }
@@ -209,27 +219,30 @@ router.post('/director/updateuserrole', async(req,res) => {
     //Catch errors
     if(!(initiatorObj.role == "director")) {
         res.json({
-            validRole: false,
-            status: "insufficient rights"
+            success: false,
+            response: "insufficient rights"
         });
         return;
     }   
 
     if(userObj.role == data.updatedRole) {
         res.json({
-            status: "User already has this role"
+            success: false,
+            response: "user already has this role"
         });
         return;
     }
 
     if(!await update(coll,userObj._id,"role",data.updatedRole)) {
         res.json({
-            status: "success"
+            success: true,
+            response: "user's role successfully changed"
         });
         return;
     } else {
         res.json({
-            status: "error updating role"
+            success: false,
+            response: "error updating role"
         });
         return;
     }
@@ -244,8 +257,8 @@ router.post('/director/showall', async (req,res) => {
 
     if(!jwt.verifyToken(data.token)) {
         res.json({
-            validToken: false,
-            status: "invalid token"
+            success: false,
+            response: "invalid token"
         });
         return;
     }
@@ -254,9 +267,8 @@ router.post('/director/showall', async (req,res) => {
 
     if(!(initiatorObj.role == "director")) {
         res.json({
-            validToken: true,
-            validRole: false,
-            status: "insufficient rights"
+            success: false,
+            response: "insufficient rights"
         });
         return;
     }  
