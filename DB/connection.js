@@ -31,18 +31,7 @@ async function checkColl(collection) {
     if (!colls.includes(collection)) {
         throw new Error("invalid collection");
     }
-}
-
-// instead of explicitly typing out the object for every creation/reedeming action
-// used in apiroutes - might be better to put in there, dunno
-async function objTemp() {
-    return {
-        date: null,
-        action: "",
-        userObj: {},
-        tokens: []
-    }
-}
+} 
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -113,8 +102,10 @@ async function createTokens(user, amount) {
 // assumed that everything checks out when get to here, no need to check jwt or other things.
 async function createLogEntry(reqObj) {
     try {
+        // get date
         let curDate = new Date();
         curDate = curDate.toUTCString();
+        // setup
         let logObj = {
             date: curDate,
             action: reqObj.action,
@@ -233,5 +224,5 @@ async function deleteToken(userId, tokenArr) {
 
 
 module.exports = {
-    createUser, createTokens, createLogEntry, readUser, deleteUser, deleteToken, updateUser, readall, objTemp
+    createUser, createTokens, createLogEntry, readUser, deleteUser, deleteToken, updateUser, readall
 };

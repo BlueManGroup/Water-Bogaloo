@@ -1,5 +1,5 @@
 const router = require('express').Router();
-const {createUser, createTokens, createLogEntry, readUser, deleteUser, deleteToken, updateUser, readall, objTemp} = require('../DB/connection');
+const {createUser, createTokens, createLogEntry, readUser, deleteUser, deleteToken, updateUser, readall} = require('../DB/connection');
 const jwt = require("../Tokens/JWT")
 require('dotenv').config()
 
@@ -234,11 +234,14 @@ router.post('/director/updateuserrole', async(req,res) => {
     }
 
     if(!await updateUser(userObj._id,"role",data.updatedRole)) {
-        let logObj = await objTemp();
-        logObj.action = "change user rights"
-        logObj.userObj.initator = decodedToken.username;
-        logObj.userObj.receiver = userObj.username;
-        logObj.userObj.role = data.updatedRole;
+        let logObj = {
+            action: "change user rights",
+            userObj: {
+                initiator: decodedToken.username,
+                receiver: userObj.username,
+                role: data.updatedRole
+            }
+        }
         await createLogEntry(logObj);
         res.json({
             success: true,
@@ -319,12 +322,15 @@ router.post('/tokens/create', async (req, res) => {
     }
 
     let result = await createTokens(data.username, data.amount);
-    let logObj = await objTemp();
-    logObj.action = "distribute";
-    logObj.userObj.initator = decodedToken.username;
-    logObj.userObj.receiver = data.username;
-    logObj.tokens = result
-    await createLogEntry(logObj)
+    let logObj = {
+        action: "distribute",
+        userObj: {
+            intiator: decodedToken.username,
+            receiver: data.username
+        },
+        tokens: result
+    }
+    await createLogEntry(logObj);
     res.json({result});
 });
 
@@ -350,9 +356,13 @@ router.post('/tokens/redeem', async(req, res) => {
     }
 
     let result = await deleteToken(userObj._id, userObj.tokens);
-    let logObj = await objTemp();
-    logObj.action = "redeem";
-    logObj.userObj = {initiator: decodedToken.username};
+    // edit object for logging
+    let logObj =  { 
+        action: "redeem",
+        userObj: {
+            initiator: decodedToken.username
+        }
+    }
     await createLogEntry(logObj);
     res.json({result});
 });
