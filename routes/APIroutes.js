@@ -234,6 +234,12 @@ router.post('/director/updateuserrole', async(req,res) => {
     }
 
     if(!await updateUser(userObj._id,"role",data.updatedRole)) {
+        let logObj = await objTemp();
+        logObj.action = "change user rights"
+        logObj.userObj.initator = decodedToken.username;
+        logObj.userObj.receiver = userObj.username;
+        logObj.userObj.role = data.updatedRole;
+        await createLogEntry(logObj);
         res.json({
             success: true,
             response: "user's role successfully changed"

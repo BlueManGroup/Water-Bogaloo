@@ -122,7 +122,7 @@ async function createLogEntry(reqObj) {
             tokens: reqObj.tokens
         }
         // no need for tokens array if no tokens are put into log!
-        if(logObj.action == "redeem") delete logObj.tokens;
+        if(logObj.action != "distribute") delete logObj.tokens;
         let result = await db.collection("log").insertOne(logObj);
         return result;
     } catch(e) {
@@ -182,8 +182,8 @@ async function readall(collection,fields) {
 //Update operation **Needs input validation**
 async function updateUser(userid,parameter,data) {
     let oid = new ObjectId(userid);
-    
-    try {await db.collection("users").updateOne(
+    try {
+        await db.collection("users").updateOne(
         {_id: oid},
         {$set: {[parameter]: data}})
         } catch(e) {
