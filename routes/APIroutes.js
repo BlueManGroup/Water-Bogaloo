@@ -1,5 +1,5 @@
 const router = require('express').Router();
-const {createUser, createTokens, readUser, deleteUser, deleteToken, updateUser, readall} = require('../DB/connection');
+const {createUser, createTokens, createLogEntry, readUser, deleteUser, deleteToken, updateUser, readall, objTemp} = require('../DB/connection');
 const jwt = require("../Tokens/JWT")
 require('dotenv').config()
 
@@ -10,7 +10,7 @@ var ObjectId = require('mongodb').ObjectId;
 //Frontpage
 router.post('/signup', async (req, res) =>{
     const data = req.body;
-    
+
     // create user
     const user = await createUser(data);
 
@@ -109,7 +109,7 @@ router.post('/account/updatePassword', async(req, res) =>{
     // if user input correct old password, change it to the new one
     if (data.password_old == result.password) {
         try {
-            update("users",user.userId,"password",data.password_new);
+            updateUser(user.userId,"password",data.password_new);
         
             res.json({
                 success: true,
@@ -233,7 +233,7 @@ router.post('/director/updateuserrole', async(req,res) => {
         return;
     }
 
-    if(!await update(coll,userObj._id,"role",data.updatedRole)) {
+    if(!await updateUser(userObj._id,"role",data.updatedRole)) {
         res.json({
             success: true,
             response: "user's role successfully changed"
@@ -313,6 +313,12 @@ router.post('/tokens/create', async (req, res) => {
     }
 
     let result = await createTokens(data.username, data.amount);
+    let logObj = await objTemp();
+    logObj.action = "distribute";
+    logObj.userObj.initator = decodedToken.username;
+    logObj.userObj.receiver = data.username;
+    logObj.tokens = result
+    await createLogEntry(logObj)
     res.json({result});
 });
 
@@ -338,6 +344,10 @@ router.post('/tokens/redeem', async(req, res) => {
     }
 
     let result = await deleteToken(userObj._id, userObj.tokens);
+    let logObj = await objTemp();
+    logObj.action = "redeem";
+    logObj.userObj = {initiator: decodedToken.username};
+    await createLogEntry(logObj);
     res.json({result});
 });
 

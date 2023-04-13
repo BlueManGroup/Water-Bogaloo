@@ -33,6 +33,17 @@ async function checkColl(collection) {
     }
 }
 
+// instead of explicitly typing out the object for every creation/reedeming action
+// used in apiroutes - might be better to put in there, dunno
+async function objTemp() {
+    return {
+        date: null,
+        action: "",
+        userObj: {},
+        tokens: []
+    }
+}
+
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //..........................................................CREATE_FUNCTIONS.......................................................//
@@ -83,6 +94,37 @@ async function createTokens(user, amount) {
 
 
         return tokens;
+    } catch(e) {
+        console.error(e);
+        return e;
+    }
+}
+
+// create log in 
+/* passed object: 
+{
+    action: string // redeem or distribute
+    userObj: { // dunno if we go with userid or username
+        receiver: string/objectid // does not exist if action is redeem
+        initiator: string/objectid // if redeem, user who redeemed. if distributor, user who distributed
+        tokenid: objectid // only if action == distribute
+    }
+}*/
+// assumed that everything checks out when get to here, no need to check jwt or other things.
+async function createLogEntry(reqObj) {
+    try {
+        let curDate = new Date();
+        curDate = curDate.toUTCString();
+        let logObj = {
+            date: curDate,
+            action: reqObj.action,
+            userObj: reqObj.userObj,
+            tokens: reqObj.tokens
+        }
+        // no need for tokens array if no tokens are put into log!
+        if(logObj.action == "redeem") delete logObj.tokens;
+        let result = await db.collection("log").insertOne(logObj);
+        return result;
     } catch(e) {
         console.error(e);
         return e;
@@ -191,5 +233,5 @@ async function deleteToken(userId, tokenArr) {
 
 
 module.exports = {
-    createUser, createTokens, readUser, deleteUser, deleteToken, updateUser, readall
+    createUser, createTokens, createLogEntry, readUser, deleteUser, deleteToken, updateUser, readall, objTemp
 };
