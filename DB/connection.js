@@ -103,18 +103,9 @@ async function createTokens(user, amount) {
 async function createLogEntry(reqObj) {
     try {
         // get date
-        let curDate = new Date();
-        curDate = curDate.toUTCString();
-        // setup
-        let logObj = {
-            date: curDate,
-            action: reqObj.action,
-            userObj: reqObj.userObj,
-            tokens: reqObj.tokens
-        }
-        // no need for tokens array if no tokens are put into log!
-        if(logObj.action != "distribute") delete logObj.tokens;
-        let result = await db.collection("log").insertOne(logObj);
+        reqObj.date = new Date().toUTCString();
+
+        let result = await db.collection("log").insertOne(reqObj);
         return result;
     } catch(e) {
         console.error(e);

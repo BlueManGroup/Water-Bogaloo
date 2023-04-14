@@ -235,13 +235,15 @@ router.post('/director/updateuserrole', async(req,res) => {
 
     if(!await updateUser(userObj._id,"role",data.updatedRole)) {
         let logObj = {
+            date: null,
             action: "change user rights",
             userObj: {
                 initiator: decodedToken.username,
-                receiver: userObj.username,
-                role: data.updatedRole
-            }
+                receiver: data.username,
+            },
+            role: data.updatedRole
         }
+
         await createLogEntry(logObj);
         res.json({
             success: true,
@@ -323,9 +325,10 @@ router.post('/tokens/create', async (req, res) => {
 
     let result = await createTokens(data.username, data.amount);
     let logObj = {
+        date: null,
         action: "distribute",
         userObj: {
-            intiator: decodedToken.username,
+            initiator: decodedToken.username,
             receiver: data.username
         },
         tokens: result
@@ -358,6 +361,7 @@ router.post('/tokens/redeem', async(req, res) => {
     let result = await deleteToken(userObj._id, userObj.tokens);
     // edit object for logging
     let logObj =  { 
+        date: null,
         action: "redeem",
         userObj: {
             initiator: decodedToken.username
