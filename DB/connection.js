@@ -58,7 +58,6 @@ async function constructQuery(queryObj) {
             query.$or.push({"userObj.receiver":queryObj.receiver});
         }
     }
-    console.log(query);
     return query;
 }
 
@@ -188,11 +187,10 @@ async function readall(collection,fields) {
 // dateStart, dateEnd, action, initiator, receiver
 async function readUserLog(reqObj) {
     try {
-        let query = constructQuery(reqObj);
+        let query = await constructQuery(reqObj);
 
-        console.log(reqObj.receiver)
         let result = await db.collection("log").find(query).toArray();
-        return result;
+        return {result: result, length: result.length};
     } catch (e) {
         console.error(e);
         return({e: "error: reading logs failed"});
