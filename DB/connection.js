@@ -190,7 +190,7 @@ async function readLog(reqObj) {
         let query = await constructQuery(reqObj);
 
         let result = await db.collection("log").find(query).toArray();
-        return {result: result, length: result.length};
+        return result;
     } catch (e) {
         console.error(e);
         return({e: "error: reading logs failed"});
