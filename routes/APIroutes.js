@@ -33,7 +33,7 @@ router.post('/signup', async (req, res) =>{
 
 router.post('/login', async (req, res) =>{
     const data = req.body;
-    const fields = {username:1,password:1}
+    const fields = {username:1,password:1,role:1}
     let user
 
     // checke if user exists
