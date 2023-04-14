@@ -56,9 +56,10 @@ router.post('/login', async (req, res) =>{
             //respond with json telling client login was A-OK 
             res.json({
                 success: true,
-                data: {
+                response: {
                     _id: user._id,
                     username: user.username,
+                    role: user.role,
                     token: token
                 }
         });
