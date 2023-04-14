@@ -1,5 +1,5 @@
 const router = require('express').Router();
-const {createUser, createTokens, createLogEntry, readUser, deleteUser, deleteToken, updateUser, readall} = require('../DB/connection');
+const {createUser, createTokens, createLogEntry, readUser, readUserLog, deleteUser, deleteToken, updateUser, readall} = require('../DB/connection');
 const jwt = require("../Tokens/JWT")
 require('dotenv').config()
 
@@ -194,6 +194,44 @@ router.post('/account/info', async(req, res) => {
     }
 });
 
+// fetch all logs about the user themselves
+router.post('/log/account', async (req, res) => {
+    const data = req.body;
+
+    if(!jwt.verifyToken(data.token)) {
+        res.json({
+            success: false,
+            response: "invalid token"
+        });
+        return;
+    }
+
+    let decodedToken = jwt.decodeToken(data.token);
+    try {
+        let queryObj = {
+            dateEnd: data.dateEnd,
+            dateStart: data.dateStart,
+            action: data.action,
+            receiver: decodedToken.username,
+            initiator: decodedToken.username
+        }
+        let result = await readUserLog(queryObj);
+    
+        res.json({
+            success: true,
+            response: result
+        });
+        return;
+    } catch (e) {
+        res.json({
+            success: false,
+            response: "error reading logs"
+        });
+        return;
+    }
+    
+});
+
 
 //###################################################
 //User rights Routes:
@@ -306,7 +344,7 @@ router.post('/tokens/create', async (req, res) => {
     // check if jwt still valid
     if(!jwt.verifyToken(data.token)) {
         res.json({
-            validToken: false,
+            success: false,
             status: "invalid token",
         });
         return;
@@ -317,8 +355,8 @@ router.post('/tokens/create', async (req, res) => {
     let initObj = await readUser({username: decodedToken.username}, {role: 1});
     if(!(initObj.role == "director")) {
         res.json({
-            validRole: false,
-            status: "invalid token"
+            success: false,
+            response: "insufficient rights"
         });
         return;
     }
@@ -342,18 +380,18 @@ router.post('/tokens/redeem', async(req, res) => {
     
     if(!jwt.verifyToken(data.token)) {
         res.json({
-            validToken: false,
-            status: "invalid token"
+            success: false,
+            response: "invalid token"
         });
         return;
     } 
 
     let decodedToken = jwt.decodeToken(data.token);
-    let userObj = await readUser({username: decodedToken.username}, {_id: 1, tokens: 1})
+    let userObj = await readUser({username: decodedToken.username}, {_id: 1, tokens: 1});
     if (userObj.tokens.length < 1) {
         res.json({
-            moreThanZeroTokens: false,
-            status: "User has no drink tokens"
+            success: false,
+            response: "User has no drink tokens"
         });
         return;
     }

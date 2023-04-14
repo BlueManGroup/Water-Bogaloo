@@ -33,6 +33,34 @@ async function checkColl(collection) {
     }
 } 
 
+// dateStart, dateEnd, action, initiator, receiver
+async function constructQuery(queryObj) {
+    let query = {}
+
+    if (queryObj.action && queryObj.action.length > 0) {
+        query.action = {$in: queryObj.action};
+    }
+
+    if (queryObj.dateStart && queryObj.dateEnd) {
+        query.date = {
+            $gte: queryObj.dateStart,
+            $lte: queryObj.dateEnd
+        }
+    }
+
+    if (queryObj.initiator || queryObj.receiver) {
+        query.$or = []
+
+        if (queryObj.initiator) {
+            query.$or.push({"userObj.initiator":queryObj.initiator});
+        }
+        if (queryObj.receiver) {
+            query.$or.push({"userObj.receiver":queryObj.receiver});
+        }
+    }
+    console.log(query);
+    return query;
+}
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //..........................................................CREATE_FUNCTIONS.......................................................//
@@ -103,7 +131,7 @@ async function createTokens(user, amount) {
 async function createLogEntry(reqObj) {
     try {
         // get date
-        reqObj.date = new Date().toUTCString();
+        reqObj.date = new Date().toISOString();
 
         let result = await db.collection("log").insertOne(reqObj);
         return result;
@@ -154,6 +182,21 @@ async function readall(collection,fields) {
         return({e: "error: read failed"});
     }
 
+}
+
+
+// dateStart, dateEnd, action, initiator, receiver
+async function readUserLog(reqObj) {
+    try {
+        let query = constructQuery(reqObj);
+
+        console.log(reqObj.receiver)
+        let result = await db.collection("log").find(query).toArray();
+        return result;
+    } catch (e) {
+        console.error(e);
+        return({e: "error: reading logs failed"});
+    }
 }
 
 
@@ -215,5 +258,5 @@ async function deleteToken(userId, tokenArr) {
 
 
 module.exports = {
-    createUser, createTokens, createLogEntry, readUser, deleteUser, deleteToken, updateUser, readall
+    createUser, createTokens, createLogEntry, readUser, readUserLog, deleteUser, deleteToken, updateUser, readall
 };
