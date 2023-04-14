@@ -1,5 +1,5 @@
 const router = require('express').Router();
-const {createUser, createTokens, createLogEntry, readUser, readUserLog, deleteUser, deleteToken, updateUser, readall} = require('../DB/connection');
+const {createUser, createTokens, createLogEntry, readUser, readLog, deleteUser, deleteToken, updateUser, readall} = require('../DB/connection');
 const jwt = require("../Tokens/JWT")
 require('dotenv').config()
 
@@ -215,7 +215,7 @@ router.post('/log/account', async (req, res) => {
             receiver: decodedToken.username,
             initiator: decodedToken.username
         }
-        let result = await readUserLog(queryObj);
+        let result = await readLog(queryObj);
     
         res.json({
             success: true,

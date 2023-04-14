@@ -185,7 +185,7 @@ async function readall(collection,fields) {
 
 
 // dateStart, dateEnd, action, initiator, receiver
-async function readUserLog(reqObj) {
+async function readLog(reqObj) {
     try {
         let query = await constructQuery(reqObj);
 
@@ -256,5 +256,5 @@ async function deleteToken(userId, tokenArr) {
 
 
 module.exports = {
-    createUser, createTokens, createLogEntry, readUser, readUserLog, deleteUser, deleteToken, updateUser, readall
+    createUser, createTokens, createLogEntry, readUser, readLog, deleteUser, deleteToken, updateUser, readall
 };
