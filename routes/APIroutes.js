@@ -195,7 +195,7 @@ router.post('/account/info', async(req, res) => {
 });
 
 // fetch all logs about the user themselves
-router.post('/log/account', async (req, res) => {
+router.post('/account/log', async (req, res) => {
     const data = req.body;
 
     if(!jwt.verifyToken(data.token)) {
@@ -331,6 +331,52 @@ router.post('/director/showall', async (req,res) => {
     });
 
 });
+
+router.post('/director/log', async (req, res) => {
+    const data = req.body;
+
+    if(!jwt.verifyToken(data.token)) {
+        res.json({
+            success: false,
+            response: "invalid token"
+        });
+        return;
+    }
+
+    let decodedToken = jwt.decodeToken(data.token);
+    let userObj = await readUser({username: decodedToken.username}, {role:1}); 
+    if (!(userObj.role == "director")) {
+        res.json({
+            success: false,
+            response: "insufficient rights"
+        });
+        return;
+    }
+
+    try {
+        let queryObj = {
+            dateEnd: data.dateEnd,
+            dateStart: data.dateStart,
+            action: data.action,
+            receiver: data.receiver,
+            initiator: data.initiator
+        }
+        let result = await readLog(queryObj);
+    
+        res.json({
+            success: true,
+            response: result
+        });
+        return;
+    } catch (e) {
+        res.json({
+            success: false,
+            response: "error reading logs"
+        });
+        return;
+    }
+
+})
 //////////////////////////////////////////////////
 // Drink tokens
 
