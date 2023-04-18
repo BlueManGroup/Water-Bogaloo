@@ -197,6 +197,16 @@ async function readLog(reqObj) {
     }
 }
 
+async function readTokenDistribution() {
+    try {
+        let count = await db.collection("tokens").countDocuments();
+        return count;
+    } catch(e) {
+        console.error(e);
+        return({e: "error reading token distribution"});
+    }
+}
+
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //..........................................................UPDATE_FUNCTIONS.......................................................//
@@ -256,5 +266,5 @@ async function deleteToken(userId, tokenArr) {
 
 
 module.exports = {
-    createUser, createTokens, createLogEntry, readUser, readLog, deleteUser, deleteToken, updateUser, readall
+    createUser, createTokens, createLogEntry, readUser, readLog, deleteUser, deleteToken, updateUser, readall, readTokenDistribution
 };

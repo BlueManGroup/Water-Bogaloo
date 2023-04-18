@@ -1,5 +1,5 @@
 const router = require('express').Router();
-const {createUser, createTokens, createLogEntry, readUser, readLog, deleteUser, deleteToken, updateUser, readall} = require('../DB/connection');
+const {createUser, createTokens, createLogEntry, readUser, readLog, deleteUser, deleteToken, updateUser, readall, readTokenDistribution} = require('../DB/connection');
 const jwt = require("../Tokens/JWT")
 require('dotenv').config()
 
@@ -406,6 +406,13 @@ router.post('/director/tokens', async (req, res) => {
         return;
     }
     let result = await readTokenDistribution();
+    if (result.e) {
+        res.json({
+            success: false,
+            response: result.e
+        });
+        return;
+    }
     res.json({
         success: true,
         response: result
