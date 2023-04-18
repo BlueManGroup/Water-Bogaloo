@@ -398,7 +398,7 @@ router.post('/director/tokens', async (req, res) => {
 
     let decodedToken = jwt.decodeToken(data.token);
     let userRole = await readUser({username: decodedToken.username}, {role: 1});
-    if (userRole != "director") {
+    if (userRole.role != "director") {
         res.json({
             success: false,
             response: "insufficient rights"
