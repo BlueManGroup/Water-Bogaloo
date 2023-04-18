@@ -492,7 +492,6 @@ router.post('/tokens/redeem', async(req, res) => {
         }
     }
     await createLogEntry(logObj);
-    console.log(result.tokens.length);
     res.json({
         success: true,
         response: result
