@@ -39,6 +39,7 @@ router.post('/login', async (req, res) =>{
     // checke if user exists
     try {
         user = await readUser(data, fields);
+        if (user == null) throw new Error("invalid user");
     } catch(e) {
         console.error(e);
         res.json({
@@ -393,6 +394,20 @@ router.post('/director/tokens', async (req, res) => {
     }
 
     let decodedToken = jwt.decodeToken(data.token);
+    let userRole = await readUser({username: decodedToken.username}, {role: 1});
+    if (userRole != "director") {
+        res.json({
+            success: false,
+            response: "insufficient rights"
+        });
+        return;
+    }
+    let result = await readTokenDistribution();
+    res.json({
+        success: true,
+        response: result
+    });
+    return;
 });
 //////////////////////////////////////////////////
 // Drink tokens
