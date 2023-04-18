@@ -38,7 +38,7 @@ router.post('/login', async (req, res) =>{
 
     // checke if user exists
     try {
-        user = await readUser(data, fields)    
+        user = await readUser(data, fields);
     } catch(e) {
         console.error(e);
         res.json({
@@ -49,6 +49,7 @@ router.post('/login', async (req, res) =>{
     }
 
     let token;
+    console.log(user);
     // check if password is correct
     if (user.password == data.password) {
         try {
@@ -378,7 +379,21 @@ router.post('/director/log', async (req, res) => {
         return;
     }
 
-})
+});
+
+router.post('/director/tokens', async (req, res) => {
+    const data = req.body;
+
+    if (!jwt.verifyToken(data.token)) {
+        res.json({
+            success: false,
+            response: "invalid token"
+        });
+        return;
+    }
+
+    let decodedToken = jwt.decodeToken(data.token);
+});
 //////////////////////////////////////////////////
 // Drink tokens
 
