@@ -50,7 +50,6 @@ router.post('/login', async (req, res) =>{
     }
 
     let token;
-    console.log(user);
     // check if password is correct
     if (user.password == data.password) {
         try {
@@ -495,7 +494,10 @@ router.post('/tokens/redeem', async(req, res) => {
     }
     console.log(result);
     await createLogEntry(logObj);
-    res.json({result});
+    res.json({
+        success: true,
+        response: result
+    });
 });
 
 module.exports = router;
