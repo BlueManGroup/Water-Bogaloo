@@ -56,7 +56,7 @@ router.post('/login', async (req, res) =>{
         try {
             token = jwt.createToken(user);
             //respond with json telling client login was A-OK 
-            shit = {
+            res.json({
                 success: true,
                 response: {
                     _id: user._id,
@@ -64,9 +64,8 @@ router.post('/login', async (req, res) =>{
                     role: user.role,
                     token: token
                 }
-        }
-            res.json(shit);
-        return;
+            });
+            return;
         } catch (e) {
             console.error(e);
             res.json({
@@ -76,6 +75,10 @@ router.post('/login', async (req, res) =>{
             return;
         }        
     }
+    res.json({
+        success: false,
+        response: "invalid username or password"
+    });
 });
 
 
