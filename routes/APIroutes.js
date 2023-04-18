@@ -493,6 +493,7 @@ router.post('/tokens/redeem', async(req, res) => {
             initiator: decodedToken.username
         }
     }
+    console.log(result);
     await createLogEntry(logObj);
     res.json({result});
 });
