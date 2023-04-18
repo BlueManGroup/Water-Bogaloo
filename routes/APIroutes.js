@@ -482,7 +482,6 @@ router.post('/tokens/redeem', async(req, res) => {
         });
         return;
     }
-    console.log("test");
     let result = await deleteToken(userObj._id, userObj.tokens);
     // edit object for logging
     let logObj =  { 
@@ -493,6 +492,7 @@ router.post('/tokens/redeem', async(req, res) => {
         }
     }
     await createLogEntry(logObj);
+    console.log(result);
     res.json({
         success: true,
         response: result
