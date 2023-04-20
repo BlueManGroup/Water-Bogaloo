@@ -189,7 +189,7 @@ router.post('/account/info', async(req, res) => {
             success: true,
             response: {
                 username: userdata.username,
-                tokens: userdata.tokens
+                tokens: userdata.tokens.length
             }
         });
     } catch(e) {
