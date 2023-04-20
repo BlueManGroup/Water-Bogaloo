@@ -250,9 +250,7 @@ async function deleteToken(userId, tokenArr) {
             { $pull: { tokens: { $eq: tokenArr[0]}, $slice: 1} }
         );
 
-        let result = {
-            tokens: tokenArr.slice(1)
-        }
+        let result = tokenArr.slice(1)
         return result.length;
     } catch(e) {
         console.error(e);
