@@ -253,7 +253,7 @@ async function deleteToken(userId, tokenArr) {
         let result = {
             tokens: tokenArr.slice(1)
         }
-        return result;
+        return result.length;
     } catch(e) {
         console.error(e);
         return e;
