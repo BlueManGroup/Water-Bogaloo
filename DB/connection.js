@@ -175,6 +175,7 @@ async function readall(collection,fields) {
 
     try {
         let result = await db.collection(collection).find({},{projection:fields}).toArray();
+        result.tokens = results.token.length;
         return result;
     } catch (e) {
         console.error(e);
@@ -190,6 +191,9 @@ async function readLog(reqObj) {
         let query = await constructQuery(reqObj);
 
         let result = await db.collection("log").find(query).toArray();
+        if (result.tokens) {
+            result.tokens = result.tokens.length;
+        }
         return result;
     } catch (e) {
         console.error(e);
