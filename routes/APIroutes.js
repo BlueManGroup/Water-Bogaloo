@@ -25,8 +25,7 @@ router.post('/signup', async (req, res) =>{
     
     res.json({
         success: true,
-        response: "account created",
-        token: token,
+        response: token
     });
     return;
 });
@@ -133,7 +132,7 @@ router.post('/account/updatePassword', async(req, res) =>{
     } else {
         res.json({
             success: false,
-            status: "invalid password"
+            response: "invalid password"
         });
         return;
     }
@@ -188,10 +187,11 @@ router.post('/account/info', async(req, res) => {
         const userdata = await readUser(data,userFields)
         res.json({
             success: true,
-            response: "account info read",
-            username: userdata.username,
-            tokens: userdata.tokens
-        })
+            response: {
+                username: userdata.username,
+                tokens: userdata.tokens
+            }
+        });
     } catch(e) {
         res.json({
             success: true,
@@ -408,7 +408,7 @@ router.post('/director/tokens', async (req, res) => {
     if (result.e) {
         res.json({
             success: false,
-            response: result.e
+            response: "error reading token distribution"
         });
         return;
     }
@@ -432,7 +432,7 @@ router.post('/tokens/create', async (req, res) => {
     if(!jwt.verifyToken(data.token)) {
         res.json({
             success: false,
-            status: "invalid token",
+            response: "invalid token",
         });
         return;
     }
@@ -459,7 +459,9 @@ router.post('/tokens/create', async (req, res) => {
         tokens: result
     }
     await createLogEntry(logObj);
-    res.json({result});
+    res.json({
+        success: true,
+        response: result});
 });
 
 router.post('/tokens/redeem', async(req, res) => {
