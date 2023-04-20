@@ -184,8 +184,9 @@ router.post('/account/info', async(req, res) => {
     try {
         // read account info // select what fields to read from mongo document
         const userFields = {tokens:1,username:1}
-        username = jwt.decodeToken(data.token);
-        
+        username = jwt.decodeToken(data.token).username;
+        console.log(username);
+        console.log(data);
         const userdata = await readUser({username: username},userFields);
         res.json({
             success: true,
