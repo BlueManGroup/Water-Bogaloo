@@ -209,10 +209,10 @@ async function readTokenDistribution() {
             // matches all documents in our collection
             { $match: { _id: { $exists: true } } },
             // extract username and the amount of tokens - leave out _id
-            { $project: {_id: 0, username: 1, tokens: { $size: "$tokens"} } }
+            { $project: {_id: 0, username: 1, tokens: { $toString: {$size: "$tokens"} } } }
             // put these into an array (does not work without - no idea why)
         ]).toArray();
-        
+
         return count;
     } catch(e) {
         console.error(e);
