@@ -191,6 +191,9 @@ async function readLog(reqObj) {
         let query = await constructQuery(reqObj);
 
         let result = await db.collection("log").find(query).toArray();
+        // result is an array of objects - not an object itself. therefore the following
+        // line does not get the length - need to iterate through all logs and do manually
+        // or make the token field an object with an array and an int
         if (result.tokens) results.token = results.token.length;
         return result;
     } catch (e) {

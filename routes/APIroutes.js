@@ -457,7 +457,10 @@ router.post('/tokens/create', async (req, res) => {
             initiator: decodedToken.username,
             receiver: data.username
         },
-        tokens: result
+        tokens: {
+            tokenAmount: result.length,
+            tokensArr: result
+        }
     }
     await createLogEntry(logObj);
     res.json({
