@@ -204,7 +204,15 @@ async function readLog(reqObj) {
 
 async function readTokenDistribution() {
     try {
-        let count = await db.collection("tokens").countDocuments();
+        //match documents, extract specific fields, then do some operations on those fields and return
+        let count = await db.collection("users").aggregate([ 
+            // matches all documents in our collection
+            { $match: { _id: { $exists: true } } },
+            // extract username and the amount of tokens - leave out _id
+            { $project: {_id: 0, username: 1, tokens: { $size: "$tokens"} } }
+            // put these into an array (does not work without - no idea why)
+        ]).toArray();
+        
         return count;
     } catch(e) {
         console.error(e);
