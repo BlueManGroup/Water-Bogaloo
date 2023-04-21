@@ -449,6 +449,8 @@ router.post('/tokens/create', async (req, res) => {
         return;
     }
 
+    console.log(data);
+
     let result = await createTokens(data.username, data.amount);
     let logObj = {
         date: null,
