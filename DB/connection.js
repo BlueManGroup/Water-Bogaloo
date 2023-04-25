@@ -220,6 +220,16 @@ async function readTokenDistribution() {
     }
 }
 
+async function readTokenCount() {
+    try {
+        let result = await db.collection("tokens").countDocuments({});
+        return result;
+    } catch(e) {
+        console.error(e);
+        return({e: "error reading token count"});
+    }
+}
+
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //..........................................................UPDATE_FUNCTIONS.......................................................//
@@ -274,5 +284,5 @@ async function deleteToken(userId, tokenArr) {
 
 
 module.exports = {
-    createUser, createTokens, createLogEntry, readUser, readLog, deleteUser, deleteToken, updateUser, readall, readTokenDistribution
+    createUser, createTokens, createLogEntry, readUser, readLog, deleteUser, deleteToken, updateUser, readall, readTokenDistribution, readTokenCount
 };

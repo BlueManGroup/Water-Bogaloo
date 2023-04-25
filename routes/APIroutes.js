@@ -1,5 +1,5 @@
 const router = require('express').Router();
-const {createUser, createTokens, createLogEntry, readUser, readLog, deleteUser, deleteToken, updateUser, readall, readTokenDistribution} = require('../DB/connection');
+const {createUser, createTokens, createLogEntry, readUser, readLog, deleteUser, deleteToken, updateUser, readall, readTokenDistribution, readTokenCount} = require('../DB/connection');
 const jwt = require("../Tokens/JWT")
 require('dotenv').config()
 
@@ -321,7 +321,7 @@ router.post('/director/showall', async (req,res) => {
 
     let initiatorObj = await readUser({username: decodedToken.username}, {role:1});
 
-    if(!(initiatorObj.role == "director")) {
+    if(initiatorObj.role != "responsible" && initiatorObj.role != "director" ) {
         res.json({
             success: false,
             response: "insufficient rights"
@@ -352,7 +352,7 @@ router.post('/director/log', async (req, res) => {
 
     let decodedToken = jwt.decodeToken(data.token);
     let userObj = await readUser({username: decodedToken.username}, {role:1}); 
-    if (!(userObj.role == "director")) {
+    if (userObj.role != "responsible" && userObj.role != "director") {
         res.json({
             success: false,
             response: "insufficient rights"
@@ -398,7 +398,7 @@ router.post('/director/tokens', async (req, res) => {
 
     let decodedToken = jwt.decodeToken(data.token);
     let userRole = await readUser({username: decodedToken.username}, {role: 1});
-    if (userRole.role == "user") {
+    if (userRole.role != "director" && userRole.role != "responsible" ) {
         res.json({
             success: false,
             response: "insufficient rights"
@@ -441,7 +441,7 @@ router.post('/tokens/create', async (req, res) => {
     // check if initiating user is director
     let decodedToken = jwt.decodeToken(data.token);
     let initObj = await readUser({username: decodedToken.username}, {role: 1});
-    if(!(initObj.role == "director")) {
+    if(initObj.role != "director" && initObj.role != "responsible") {
         res.json({
             success: false,
             response: "insufficient rights"
@@ -504,6 +504,36 @@ router.post('/tokens/redeem', async(req, res) => {
         success: true,
         response: result
     });
+});
+
+router.post('/tokens/count', async(req, res) => {
+    const data = req.body;
+
+    if (!jwt.verifyToken(data.token)) {
+        res.json({
+            succes: false,
+            response: "invalid token"
+        });
+        return;
+    }
+
+    let decodedToken = jwt.decodeToken(data.token);
+    let userObj = await readUser({username: decodedToken.username}, {"role": 1});
+    if (userObj.role != "director" && userObj.role != "responsible") {
+        res.json({
+            success: false,
+            response: "insufficient rights"
+        });
+        return;
+    }
+
+    let result = await readTokenCount();
+
+    res.json({
+        success: true,
+        response: result
+    });
+    return
 });
 
 module.exports = router;
