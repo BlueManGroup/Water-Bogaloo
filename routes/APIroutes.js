@@ -460,14 +460,14 @@ router.post('/tokens/create', async (req, res) => {
             receiver: data.username
         },
         tokens: {
-            tokenAmount: result.length,
-            tokensArr: result
+            tokenAmount: result.tokens.length,
+            tokensArr: result.tokens
         }
     }
     await createLogEntry(logObj);
     res.json({
         success: true,
-        response: result});
+        response: result.userTokenAmount});
 });
 
 router.post('/tokens/redeem', async(req, res) => {

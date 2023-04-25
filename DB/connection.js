@@ -109,7 +109,7 @@ async function createTokens(user, amount) {
         }
 
 
-        return tokens;
+        return {tokens: tokens, userTokenAmount: userObj.tokens.length + tokens.length};
     } catch(e) {
         console.error(e);
         return e;
