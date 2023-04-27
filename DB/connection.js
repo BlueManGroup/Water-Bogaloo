@@ -31,8 +31,35 @@ async function checkColl(collection) {
     if (!colls.includes(collection)) {
         throw new Error("invalid collection");
     }
-}
+} 
 
+// dateStart, dateEnd, action, initiator, receiver
+async function constructQuery(queryObj) {
+    let query = {}
+
+    if (queryObj.action && queryObj.action.length > 0) {
+        query.action = {$in: queryObj.action};
+    }
+
+    if (queryObj.dateStart && queryObj.dateEnd) {
+        query.date = {
+            $gte: queryObj.dateStart,
+            $lte: queryObj.dateEnd
+        }
+    }
+
+    if (queryObj.initiator || queryObj.receiver) {
+        query.$or = []
+
+        if (queryObj.initiator) {
+            query.$or.push({"userObj.initiator":queryObj.initiator});
+        }
+        if (queryObj.receiver) {
+            query.$or.push({"userObj.receiver":queryObj.receiver});
+        }
+    }
+    return query;
+}
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //..........................................................CREATE_FUNCTIONS.......................................................//
@@ -62,7 +89,7 @@ async function createUser(data) {
 // Create token(s)
 // create x tokens and link them to user
 async function createTokens(user, amount) {
-    let userObj = await readUser({username: user}, {_id: 1});
+    let userObj = await readUser({username: user}, {_id: 1, tokens: 1});
     if (!userObj) {
         return "invalid user";
     }
@@ -82,7 +109,31 @@ async function createTokens(user, amount) {
         }
 
 
-        return tokens;
+        return {tokens: tokens, userTokenAmount: userObj.tokens.length + tokens.length};
+    } catch(e) {
+        console.error(e);
+        return e;
+    }
+}
+
+// create log in 
+/* passed object: 
+{
+    action: string // redeem or distribute
+    userObj: { // dunno if we go with userid or username
+        receiver: string/objectid // does not exist if action is redeem
+        initiator: string/objectid // if redeem, user who redeemed. if distributor, user who distributed
+        tokenid: objectid // only if action == distribute
+    }
+}*/
+// assumed that everything checks out when get to here, no need to check jwt or other things.
+async function createLogEntry(reqObj) {
+    try {
+        // get date
+        reqObj.date = new Date().toISOString();
+
+        let result = await db.collection("log").insertOne(reqObj);
+        return result;
     } catch(e) {
         console.error(e);
         return e;
@@ -124,12 +175,59 @@ async function readall(collection,fields) {
 
     try {
         let result = await db.collection(collection).find({},{projection:fields}).toArray();
+        if (result.tokens) results.token = results.token.length;
         return result;
     } catch (e) {
         console.error(e);
         return({e: "error: read failed"});
     }
 
+}
+
+
+// dateStart, dateEnd, action, initiator, receiver
+async function readLog(reqObj) {
+    try {
+        let query = await constructQuery(reqObj);
+
+        let result = await db.collection("log").find(query).toArray();
+        // result is an array of objects - not an object itself. therefore the following
+        // line does not get the length - need to iterate through all logs and do manually
+        // or make the token field an object with an array and an int
+        if (result.tokens) results.token = results.token.length;
+        return result;
+    } catch (e) {
+        console.error(e);
+        return({e: "error: reading logs failed"});
+    }
+}
+
+async function readTokenDistribution() {
+    try {
+        //match documents, extract specific fields, then do some operations on those fields and return
+        let count = await db.collection("users").aggregate([ 
+            // matches all documents in our collection
+            { $match: { _id: { $exists: true } } },
+            // extract username and the amount of tokens - leave out _id
+            { $project: {_id: 0, username: 1, tokens: { $toString: {$size: "$tokens"} } } }
+            // put these into an array (does not work without - no idea why)
+        ]).toArray();
+
+        return count;
+    } catch(e) {
+        console.error(e);
+        return({e: "error reading token distribution"});
+    }
+}
+
+async function readTokenCount() {
+    try {
+        let result = await db.collection("tokens").countDocuments({});
+        return result;
+    } catch(e) {
+        console.error(e);
+        return({e: "error reading token count"});
+    }
 }
 
 
@@ -140,8 +238,8 @@ async function readall(collection,fields) {
 //Update operation **Needs input validation**
 async function updateUser(userid,parameter,data) {
     let oid = new ObjectId(userid);
-    
-    try {await db.collection("users").updateOne(
+    try {
+        await db.collection("users").updateOne(
         {_id: oid},
         {$set: {[parameter]: data}})
         } catch(e) {
@@ -168,20 +266,15 @@ async function deleteUser(userId) {
 }
 
 async function deleteToken(userId, tokenArr) {
-
-    let result = {
-        tokenRes: null,
-        userRes: null
-    }
-
     try {
-        result['tokenRes'] = await db.collection("tokens").deleteOne({ _id: tokenArr[0] });
-        result['userRes'] = await db.collection("users").updateOne(
+        await db.collection("tokens").deleteOne({ _id: tokenArr[0] });
+       await db.collection("users").updateOne(
             {_id: userId},
             { $pull: { tokens: { $eq: tokenArr[0]}, $slice: 1} }
         );
 
-        return result;
+        let result = tokenArr.slice(1)
+        return result.length;
     } catch(e) {
         console.error(e);
         return e;
@@ -191,5 +284,5 @@ async function deleteToken(userId, tokenArr) {
 
 
 module.exports = {
-    createUser, createTokens, readUser, deleteUser, deleteToken, updateUser, readall
+    createUser, createTokens, createLogEntry, readUser, readLog, deleteUser, deleteToken, updateUser, readall, readTokenDistribution, readTokenCount
 };
