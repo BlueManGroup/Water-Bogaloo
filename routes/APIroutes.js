@@ -1,7 +1,13 @@
 const router = require('express').Router();
-const {createUser, createTokens, createLogEntry, readUser, readLog, deleteUser, deleteToken, updateUser, readall, readTokenDistribution, readTokenCount} = require('../DB/connection');
-const jwt = require("../utilities/JWT")
+const { createUser, createTokens, createLogEntry, readUser, readLog, deleteUser, deleteToken, updateUser, readall, readTokenDistribution, readTokenCount } = require('../DB/connection');
+const jwt = require("../utilities/JWT");
+const { hashPassword } = require("../utilities/Hash");
 require('dotenv').config()
+
+process.on('uncaughtException', function (err) {
+    console.error(err);
+    console.log("Node NOT Exiting...");
+  });
 
 var ObjectId = require('mongodb').ObjectId;
 
@@ -10,6 +16,8 @@ var ObjectId = require('mongodb').ObjectId;
 //Frontpage
 router.post('/signup', async (req, res) =>{
     const data = req.body;
+
+    data.password = hashPassword(data.password);
 
     // create user
     const user = await createUser(data);
@@ -32,6 +40,7 @@ router.post('/signup', async (req, res) =>{
 
 router.post('/login', async (req, res) =>{
     const data = req.body;
+    data.password = hashPassword(data.password);
     const fields = {username:1,password:1,role:1}
     let user
 
@@ -85,6 +94,16 @@ router.post('/login', async (req, res) =>{
 //Account routes, needs token validation to be used
 router.post('/account/updatePassword', async(req, res) =>{
     data = req.body;
+    try {
+        data.password_old = hashPassword(data.password_old);
+        data.password_new = hashPassword(data.password_new);
+    } catch (e) {
+        console.error(e);
+        res.json({
+            success: false,
+            response: "error updating password"
+        })
+    }
 
     if(!jwt.verifyToken(data.token)) {
         res.json({
