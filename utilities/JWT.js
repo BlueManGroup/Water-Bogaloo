@@ -19,8 +19,8 @@ const createToken = (user) => {
     
 }
 
-const verifyToken = (token) => {
-    // verify token and assign to variable
+const  verifyToken = async (token) => {
+    // validation check on token
     let verification;
     try {
 
@@ -30,8 +30,33 @@ const verifyToken = (token) => {
         console.error(e)
         verification = false;
     }
+
+    //verification of user identity
+    let user = await decodeToken(data.token);
+
+    let userObj = {
+        "userid": user.userId
+    };
+    let result;
+    let role = "user" 
+    try{
+        result = await readUser(userObj);
+        if (result != null) {
+            verification = true;
+            role = result.role
+        } else {
+            verification = false;
+        }
+    } catch(e) {
+        console.error(e)
+        verification = false;
+    }
+
     // return true or false based on whether or not the token was validated
-    return verification ? true: false;
+    return {
+        verification: verification,
+        role: role
+    }
 
 }
 
