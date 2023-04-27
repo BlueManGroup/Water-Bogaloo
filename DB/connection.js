@@ -1,6 +1,6 @@
 const MongoClient = require('mongodb').MongoClient;
 var ObjectId = require('mongodb').ObjectId;
-const jwt = require('../Tokens/JWT');
+const jwt = require('../utilities/JWT');
 
 require('dotenv').config()
 

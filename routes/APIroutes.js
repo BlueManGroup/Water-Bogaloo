@@ -1,6 +1,6 @@
 const router = require('express').Router();
 const {createUser, createTokens, createLogEntry, readUser, readLog, deleteUser, deleteToken, updateUser, readall, readTokenDistribution, readTokenCount} = require('../DB/connection');
-const jwt = require("../Tokens/JWT")
+const jwt = require("../utilities/JWT")
 require('dotenv').config()
 
 var ObjectId = require('mongodb').ObjectId;
