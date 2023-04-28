@@ -166,7 +166,7 @@ async function readUser(identifier, fields) {
         return result;
     } catch (e) {
         console.error(e);
-        return({e: "error: read failed"});
+        return null;
     }
 }
 
@@ -258,7 +258,7 @@ async function deleteUser(userId) {
     try {
         let oid = new ObjectId(userId);
         await db.collection("users").deleteOne({_id: oid});  
-        return "success";  
+        return true;  
     } catch(e) {
         console.error(e);
         return e;

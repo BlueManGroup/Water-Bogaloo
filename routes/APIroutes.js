@@ -1,6 +1,7 @@
 const router = require('express').Router();
 const { createUser, createTokens, createLogEntry, readUser, readLog, deleteUser, deleteToken, updateUser, readall, readTokenDistribution, readTokenCount } = require('../DB/connection');
-const jwt = require("../utilities/JWT");
+const { verifyUser, checkObj, checkStr } = require('../utilities/verification');
+const { createToken } = require('../utilities/JWT');
 const { hashPassword } = require("../utilities/Hash");
 require('dotenv').config()
 
@@ -17,34 +18,47 @@ var ObjectId = require('mongodb').ObjectId;
 router.post('/signup', async (req, res) =>{
     const data = req.body;
 
+    if (checkObj(data) === false) {
+        res.json({
+            success: false,
+            reponse: "invalid input"
+        });
+    }
+
     data.password = hashPassword(data.password);
 
     // create user
     const user = await createUser(data);
 
-    if (!user) {
+    if (user === false) {
         res.json({
             success: false,
             response: "user already exists",
         })
         return;
     }
-    let token = jwt.createToken(user);  
+    let token = createToken(user);  
     
     res.json({
         success: true,
         response: token
     });
-    return;
 });
 
 router.post('/login', async (req, res) =>{
     const data = req.body;
+    if (checkObj(data) === false) {
+        res.json({
+            success: false,
+            response: "invalid input"
+        });
+    }
+    
     data.password = hashPassword(data.password);
     const fields = {username:1,password:1,role:1}
-    let user
+    let user;
 
-    // checke if user exists
+    // check if user exists
     try {
         user = await readUser(data, fields);
         if (user == null) throw new Error("invalid user");
@@ -61,7 +75,7 @@ router.post('/login', async (req, res) =>{
     // check if password is correct
     if (user.password == data.password) {
         try {
-            token = jwt.createToken(user);
+            token = createToken(user);
             //respond with json telling client login was A-OK 
             res.json({
                 success: true,
@@ -93,7 +107,7 @@ router.post('/login', async (req, res) =>{
 ////////////////////////////////
 //Account routes, needs token validation to be used
 router.post('/account/updatePassword', async(req, res) =>{
-    data = req.body;
+    let data = req.body;
     try {
         data.password_old = hashPassword(data.password_old);
         data.password_new = hashPassword(data.password_new);
@@ -102,26 +116,14 @@ router.post('/account/updatePassword', async(req, res) =>{
         res.json({
             success: false,
             response: "error updating password"
-        })
-    }
-
-    if(!jwt.verifyToken(data.token)) {
-        res.json({
-            success: false,
-            response: "invalid token"
         });
-        return;
     }
+    
+    let user = await verifyUser(data.token).response;
 
-    let user = await jwt.decodeToken(data.token);
-
-    let userObj = {
-        "username": user.username,
-        "userid": user.userId
-    };
     let result;
     try{
-        result = await readUser(userObj,{"password": 1});
+        result = await readUser( { userid: user._id } ,{ "password" : 1 } );
     } catch(e) {
         console.error(e)
         res.json({
@@ -130,10 +132,10 @@ router.post('/account/updatePassword', async(req, res) =>{
         });
     }
 
-    // if user input correct old password, change it to the new one
+    // if user input the correct old password, change it to the new one
     if (data.password_old == result.password) {
         try {
-            updateUser(user.userId,"password",data.password_new);
+            updateUser(user._id, "password", data.password_new);
         
             res.json({
                 success: true,
@@ -143,7 +145,7 @@ router.post('/account/updatePassword', async(req, res) =>{
         } catch(e) {
             res.json({
                 success: false,
-                response: "error changing password"
+                response: "error updating password"
             });
             return;
         }
@@ -153,26 +155,22 @@ router.post('/account/updatePassword', async(req, res) =>{
             success: false,
             response: "invalid password"
         });
-        return;
     }
 });
 
-router.post('/account/delete', (req, res) =>{
+router.post('/account/delete', async (req, res) =>{
     
     const data = req.body;
-    
-    if (!jwt.verifyToken(data.token)) {
-        res.json({
-            success: false,
-            response: "invalid token"
-        });
-        return;
-    }
-
     try {
-        //update coll to take from data instead of being hardcoded
-        userId = jwt.decodeToken(data.token).userId;
-        deleteUser(userId);
+
+        let userId = verifyUser(data.token).response._id;
+        
+        if (!(await deleteUser(userId))) {
+            res.json({
+                success: false,
+                response: "errrrrrrrrror deleting account"
+            });
+        }
         
         res.json({
             success: true,
@@ -181,9 +179,9 @@ router.post('/account/delete', (req, res) =>{
     }
     catch(e) {
         res.json({
-            success: true,
+            success: false,
             response: "error deleting account"
-        })
+        });
     }
 });
 
@@ -203,8 +201,8 @@ router.post('/account/info', async(req, res) => {
     try {
         // read account info // select what fields to read from mongo document
         const userFields = {tokens:1,username:1}
-        username = jwt.decodeToken(data.token).username;
-        const userdata = await readUser({username: username},userFields);
+        let userid = await verifyAndDecodeToken(data.token).response._id;
+        const userdata = await readUser( { userid: userid } , userFields );
         res.json({
             success: true,
             response: {
