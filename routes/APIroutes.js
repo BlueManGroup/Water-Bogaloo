@@ -53,7 +53,7 @@ router.post('/login', async (req, res) =>{
             response: "invalid input"
         });
     }
-    
+    console.log(data)
     data.password = hashPassword(data.password);
     const fields = {username:1,password:1,role:1}
     let user;
