@@ -161,6 +161,14 @@ router.post('/account/updatePassword', async(req, res) =>{
 router.post('/account/delete', async (req, res) =>{
     
     const data = req.body;
+
+    if (checkObj(data) === false) {
+        res.json({
+            success: false,
+            response: "invalid input"
+        });
+    }
+
     try {
 
         let userId = verifyUser(data.token).response._id;
