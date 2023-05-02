@@ -107,7 +107,8 @@ router.post('/login', async (req, res) =>{
 ////////////////////////////////
 //Account routes, needs token validation to be used
 router.post('/account/updatePassword', async(req, res) =>{
-    let data = req.body;
+    const data = req.body;
+    let result;
 
     if (checkObj(data) === false) {
         res.json({
@@ -135,7 +136,7 @@ router.post('/account/updatePassword', async(req, res) =>{
         res.json(verifyUser);
         return;
     }
-
+    
     try{
         result = await readUser( { userid: verifyUser.response._id } ,{ "password" : 1 } );
     } catch(e) {
@@ -309,16 +310,14 @@ router.post('/director/updateuserrole', async(req,res) => {
     }
 
     //Token validation
-    if(!jwt.verifyUser(data.token)) {
-        res.json({
-            success: false,
-            response: "invalid token"
-        });
+    let user = await verifyUser(data.token);
+    if(!user.success) {
+        res.json(user);
         return;
     }
 
-    let decodedToken = jwt.decodeToken(data.token);
-    let initiatorObj = await readUser({username: decodedToken.username}, {role:1});
+    
+    let initiatorObj = await readUser({username: user.response.username}, {role:1});
     let userObj = await readUser({username: data.username}, {role:1, username:1});
     //Catch errors
     if(!(initiatorObj.role == "director")) {
@@ -342,7 +341,7 @@ router.post('/director/updateuserrole', async(req,res) => {
             date: null,
             action: "change user rights",
             userObj: {
-                initiator: decodedToken.username,
+                initiator: user.response.username,
                 receiver: data.username,
             },
             role: data.updatedRole
@@ -413,7 +412,7 @@ router.post('/director/log', async (req, res) => {
         });
     }
 
-    if(!jwt.verifyUser(data.token)) {
+    if(!verifyUser(data.token)) {
         res.json({
             success: false,
             response: "invalid token"
@@ -467,7 +466,7 @@ router.post('/director/tokens', async (req, res) => {
         });
     }
 
-    if (!jwt.verifyUser(data.token)) {
+    if (!verifyUser(data.token)) {
         res.json({
             success: false,
             response: "invalid token"
@@ -516,7 +515,7 @@ router.post('/tokens/create', async (req, res) => {
     }
     
     // check if jwt still valid
-    if(!jwt.verifyUser(data.token)) {
+    if(!verifyUser(data.token)) {
         res.json({
             success: false,
             response: "invalid token",
@@ -566,7 +565,7 @@ router.post('/tokens/redeem', async(req, res) => {
         });
     }
     
-    if(!jwt.verifyUser(data.token)) {
+    if(!verifyUser(data.token)) {
         res.json({
             success: false,
             response: "invalid token"
@@ -609,7 +608,7 @@ router.post('/tokens/count', async(req, res) => {
         });
     }
 
-    if (!jwt.verifyUser(data.token)) {
+    if (!verifyUser(data.token)) {
         res.json({
             succes: false,
             response: "invalid token"
