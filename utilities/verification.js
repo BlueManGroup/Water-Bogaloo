@@ -55,3 +55,7 @@ const sanitizeInput = (toSanitize) => {
     // to add to list, do backslash before character
     return toSanitize.replace(/[\\\$\"\'\{\}]/g, '_');
 }
+
+module.exports = {
+    verifyUser, checkStr, checkObj
+}
