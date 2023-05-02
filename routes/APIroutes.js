@@ -227,6 +227,7 @@ router.post('/account/info', async(req, res) => {
         });
     }
 
+    // read account info
     let verifyUserObj = await verifyUser(data.token);
     
     if (!(verifyUserObj.success)) {
@@ -234,22 +235,14 @@ router.post('/account/info', async(req, res) => {
         return;
     }
     
-    try {
-        // read account info // select what fields to read from mongo document
-        const userFields = {tokens:1,username:1}
-        res.json({
-            success: true,
-            response: {
-                username: verifyUserObj.response.username,
-                tokens: verifyUserObj.response.tokens.length
-            }
-        });
-    } catch(e) {
-        res.json({
-            success: true,
-            response: "error reading account info"
-        });
-    }
+    // respond with account info
+    res.json({
+        success: true,
+        response: {
+            username: verifyUserObj.response.username,
+            tokens: verifyUserObj.response.tokens.length
+        }
+    });
 });
 
 // fetch all logs about the user themselves
