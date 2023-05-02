@@ -187,16 +187,14 @@ router.post('/account/delete', async (req, res) =>{
         });
     }
 
-    try {
-
-        let verifyUserObj = await verifyUser(data.token);
+    let verifyUserObj = await verifyUser(data.token);
     
-        if (!(verifyUserObj.success)) {
-            res.json(verifyUserObj);
-            return;
-        }
-       
-        
+    if (!(verifyUserObj.success)) {
+        res.json(verifyUserObj);
+        return;
+    }
+
+    try {
         if (!(await deleteUser(verifyUserObj.response._id))) {
             res.json({
                 success: false,
@@ -229,17 +227,21 @@ router.post('/account/info', async(req, res) => {
         });
     }
 
+    let verifyUserObj = await verifyUser(data.token);
+    
+    if (!(verifyUserObj.success)) {
+        res.json(verifyUserObj);
+        return;
+    }
     
     try {
         // read account info // select what fields to read from mongo document
         const userFields = {tokens:1,username:1}
-        let userid = await verifyUser(data.token).response._id;
-        const userdata = await readUser( { userid: userid } , userFields );
         res.json({
             success: true,
             response: {
-                username: userdata.username,
-                tokens: userdata.tokens.length
+                username: verifyUserObj.response.username,
+                tokens: verifyUserObj.response.tokens.length
             }
         });
     } catch(e) {
