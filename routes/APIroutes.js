@@ -67,7 +67,6 @@ router.post('/login', async (req, res) =>{
         res.json({
             success: false,
             response: "invalid username or password",
-            test: data.password
         })
         return;
     }

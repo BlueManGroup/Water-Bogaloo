@@ -46,6 +46,7 @@ const checkObj = (toCheck) => {
         }
         toCheck[item] = sanitizeInput(toCheck[item]);
     }
+    console.log("hello",toCheck);
     return toCheck;
 }
 
