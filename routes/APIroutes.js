@@ -307,14 +307,17 @@ router.post('/director/updateuserrole', async(req,res) => {
     }
 
     //Token validation
-    let user = await verifyUser(data.token);
-    if(!user.success) {
-        res.json(user);
+    let verifyUserObj = await verifyUser(data.token);
+    if(!verifyUserObj.success) {
+        res.json(verifyUserObj);
         return;
     }
 
     
-    let initiatorObj = await readUser({username: user.response.username}, {role:1});
+    let initiatorObj = {
+        username : verifyUserObj.response.username,
+        role : verifyUserObj.response.role
+    }
     let userObj = await readUser({username: data.username}, {role:1, username:1});
     //Catch errors
     if(!(initiatorObj.role == "director")) {
@@ -338,7 +341,7 @@ router.post('/director/updateuserrole', async(req,res) => {
             date: null,
             action: "change user rights",
             userObj: {
-                initiator: user.response.username,
+                initiator: verifyUserObj.response.username,
                 receiver: data.username,
             },
             role: data.updatedRole
