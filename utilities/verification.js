@@ -20,6 +20,7 @@ const verifyUser = async (token) => {
                 response: "error reading user"
             });
         }
+        console.log("plis work now")
         return({
             success: true,
             response: result
