@@ -561,33 +561,35 @@ router.post('/tokens/redeem', async(req, res) => {
         });
     }
     
-    if(!verifyUser(data.token)) {
-        res.json({
-            success: false,
-            response: "invalid token"
-        });
+    let verifyUserObj = await verifyUser(data.token);
+    
+    if (!verifyUserObj.success) {
+        res.json(verifyUser);
         return;
-    } 
+    }
 
-    let decodedToken = jwt.decodeToken(data.token);
-    let userObj = await readUser({username: decodedToken.username}, {_id: 1, tokens: 1});
-    if (userObj.tokens.length < 1) {
+    // Check if user has any drink tokens
+    if (verifyUserObj.response.tokens.length < 1) {
         res.json({
             success: false,
             response: "User has no drink tokens"
         });
         return;
     }
-    let result = await deleteToken(userObj._id, userObj.tokens);
+
+    let result = await deleteToken(verifyUserObj.response._id, verifyUserObj.response.tokens);
+    
     // edit object for logging
     let logObj =  { 
         date: null,
         action: "redeem",
         userObj: {
-            initiator: decodedToken.username
+            initiator: verifyUserObj.response.username
         }
     }
+
     await createLogEntry(logObj);
+    
     res.json({
         success: true,
         response: result
