@@ -121,7 +121,7 @@ router.post('/account/updatePassword', async(req, res) =>{
     verifyUserObj = verifyUser(data.token);
     
     if (!verifyUserObj.success) {
-        res.json(verifyUserObj);
+        res.json({success : "failed"});
         return;
     }
 
