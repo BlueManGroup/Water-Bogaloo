@@ -414,17 +414,13 @@ router.post('/director/log', async (req, res) => {
         });
     }
 
-    if(!verifyUser(data.token)) {
-        res.json({
-            success: false,
-            response: "invalid token"
-        });
+    let verifyUserObj = await verifyUser(data.token);
+    if(!verifyUserObj.success) {
+        res.json(verifyUserObj);
         return;
     }
 
-    let decodedToken = jwt.decodeToken(data.token);
-    let userObj = await readUser({username: decodedToken.username}, {role:1}); 
-    if (userObj.role != "responsible" && userObj.role != "director") {
+    if (verifyUserObj.response.role != "director") {
         res.json({
             success: false,
             response: "insufficient rights"
@@ -468,11 +464,9 @@ router.post('/director/tokens', async (req, res) => {
         });
     }
 
-    if (!verifyUser(data.token)) {
-        res.json({
-            success: false,
-            response: "invalid token"
-        });
+    let verifyUserObj = await verifyUser(data)
+    if (!) {
+        res.json();
         return;
     }
 
