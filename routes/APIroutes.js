@@ -107,7 +107,7 @@ router.post('/login', async (req, res) =>{
 ////////////////////////////////
 //Account routes, needs token validation to be used
 router.post('/account/updatePassword', async(req, res) =>{
-    const data = req.body;
+    let data = req.body;
     let result;
 
     if (checkObj(data) === false) {
@@ -118,22 +118,23 @@ router.post('/account/updatePassword', async(req, res) =>{
         return;
     }
 
+    verifyUserObj = verifyUser(data.token);
+    
+    if (!verifyUserObj.success) {
+        res.json(verifyUserObj);
+        return;
+    }
+
     try {
         data.password_old = hashPassword(data.password_old);
         data.password_new = hashPassword(data.password_new);
+
     } catch (e) {
         console.error(e);
         res.json({
             success: false,
             response: "error updating password" //erorr in hashing
         });
-        return;
-    }
-
-    verifyUserObj = verifyUser(data.token);
-    
-    if (!verifyUser.success) {
-        res.json(verifyUser);
         return;
     }
     
