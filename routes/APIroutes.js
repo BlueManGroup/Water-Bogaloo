@@ -521,7 +521,7 @@ router.post('/tokens/create', async (req, res) => {
         return;
     }
 
-    // check if initiating user is director
+    // check if initiating user is a director or a responsible
     if(verifyUserObj.response.role != "director" && verifyUserObj.response.role != "responsible") {
         res.json({
             success: false,
@@ -537,7 +537,7 @@ router.post('/tokens/create', async (req, res) => {
         date: null,
         action: "distribute",
         userObj: {
-            initiator: decodedToken.username,
+            initiator: verifyUserObj.response.username,
             receiver: data.username
         },
         tokens: {
@@ -604,17 +604,14 @@ router.post('/tokens/count', async(req, res) => {
         });
     }
 
-    if (!verifyUser(data.token)) {
-        res.json({
-            succes: false,
-            response: "invalid token"
-        });
+    let verifyUserObj = await verifyUser(data.token);
+    
+    if (!verifyUserObj.success) {
+        res.json(verifyUser);
         return;
     }
 
-    let decodedToken = jwt.decodeToken(data.token);
-    let userObj = await readUser({username: decodedToken.username}, {"role": 1});
-    if (userObj.role != "director" && userObj.role != "responsible") {
+    if (verifyUserObj.response.role != "director" && verifyUserObj.response.role != "responsible") {
         res.json({
             success: false,
             response: "insufficient rights"
