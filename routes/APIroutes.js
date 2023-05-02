@@ -464,9 +464,10 @@ router.post('/director/tokens', async (req, res) => {
         });
     }
 
-    let verifyUserObj = await verifyUser(data)
-    if (!) {
-        res.json();
+    let verifyUserObj = await verifyUser(data.token);
+    
+    if (!verifyUserObj.success) {
+        res.json(verifyUserObj);
         return;
     }
 
