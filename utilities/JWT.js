@@ -5,12 +5,12 @@ const secret = process.env.TOKENSECRET
 const createToken = (user) => {
     // create token with following parameters and return
     try {
-        const token = sign(
+        let token = sign(
             {userId: user._id, username:user.username},
             secret,
             {expiresIn:"1h"}
             
-        )
+        );
         return token
     } catch (e) {
         console.error(e)
@@ -19,34 +19,22 @@ const createToken = (user) => {
     
 }
 
-const verifyToken = (token) => {
-    // verify token and assign to variable
-    let verification;
+const verifyAndDecodeToken = (token) => {
     try {
+        if (!verify(token, secret)) {
+            return null;
+        }
+        let decodedToken = decode(token, secret);
 
-        verification = verify(token, secret);
-
-    } catch (e) {
-        console.error(e)
-        verification = false;
+        return decodedToken;
+    } catch(e) {
+        console.error(e);
+        return null;
     }
-    // return true or false based on whether or not the token was validated
-    return verification ? true: false;
-
+    
 }
 
-const decodeToken = (token) => {
-    try {
-        let decodedToken = decode(token);
-        return decodedToken
-    } catch (e) {
-        console.error(e)
-        return
-    }
-} 
-
 module.exports = { 
-    createToken, 
-    verifyToken,
-    decodeToken
+    createToken,
+    verifyAndDecodeToken
  }

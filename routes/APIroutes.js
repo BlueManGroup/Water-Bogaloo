@@ -1,6 +1,7 @@
 const router = require('express').Router();
 const { createUser, createTokens, createLogEntry, readUser, readLog, deleteUser, deleteToken, updateUser, readall, readTokenDistribution, readTokenCount } = require('../DB/connection');
-const jwt = require("../utilities/JWT");
+const { verifyUser, checkObj, checkStr } = require('../utilities/verification');
+const { createToken } = require('../utilities/JWT');
 const { hashPassword } = require("../utilities/Hash");
 require('dotenv').config()
 
@@ -17,34 +18,47 @@ var ObjectId = require('mongodb').ObjectId;
 router.post('/signup', async (req, res) =>{
     const data = req.body;
 
+    if (checkObj(data) === false) {
+        res.json({
+            success: false,
+            reponse: "invalid input"
+        });
+    }
+
     data.password = hashPassword(data.password);
 
     // create user
     const user = await createUser(data);
 
-    if (!user) {
+    if (user === false) {
         res.json({
             success: false,
             response: "user already exists",
         })
         return;
     }
-    let token = jwt.createToken(user);  
+    let token = createToken(user);  
     
     res.json({
         success: true,
         response: token
     });
-    return;
 });
 
 router.post('/login', async (req, res) =>{
     const data = req.body;
+    if (checkObj(data) === false) {
+        res.json({
+            success: false,
+            response: "invalid input"
+        });
+    }
+    
     data.password = hashPassword(data.password);
     const fields = {username:1,password:1,role:1}
-    let user
+    let user;
 
-    // checke if user exists
+    // check if user exists
     try {
         user = await readUser(data, fields);
         if (user == null) throw new Error("invalid user");
@@ -52,7 +66,7 @@ router.post('/login', async (req, res) =>{
         console.error(e);
         res.json({
             success: false,
-            response: "invalid username or password"
+            response: "invalid username or password",
         })
         return;
     }
@@ -61,7 +75,7 @@ router.post('/login', async (req, res) =>{
     // check if password is correct
     if (user.password == data.password) {
         try {
-            token = jwt.createToken(user);
+            token = createToken(user);
             //respond with json telling client login was A-OK 
             res.json({
                 success: true,
@@ -93,57 +107,62 @@ router.post('/login', async (req, res) =>{
 ////////////////////////////////
 //Account routes, needs token validation to be used
 router.post('/account/updatePassword', async(req, res) =>{
-    data = req.body;
-    try {
-        data.password_old = hashPassword(data.password_old);
-        data.password_new = hashPassword(data.password_new);
-    } catch (e) {
-        console.error(e);
-        res.json({
-            success: false,
-            response: "error updating password"
-        })
-    }
+    let data = req.body;
+    let result;
 
-    if(!jwt.verifyToken(data.token)) {
+    if (checkObj(data) === false) {
         res.json({
             success: false,
-            response: "invalid token"
+            reponse: "invalid input"
         });
         return;
     }
 
-    let user = await jwt.decodeToken(data.token);
+    verifyUserObj = await verifyUser(data.token)
+    if (!verifyUserObj.success) {
+        res.json(verifyUserObj);
+        return;
+    }
 
-    let userObj = {
-        "username": user.username,
-        "userid": user.userId
-    };
-    let result;
+    try {
+        data.password_old = hashPassword(data.password_old);
+        data.password_new = hashPassword(data.password_new);
+
+    } catch (e) {
+        console.error(e);
+        res.json({
+            success: false,
+            response: "error updating password" //erorr in hashing
+        });
+        return;
+    }
+    
     try{
-        result = await readUser(userObj,{"password": 1});
+        result = await readUser( { userid: verifyUserObj.response._id } ,{ "password" : 1 } );
     } catch(e) {
         console.error(e)
         res.json({
             success: false,
-            response: "error updating password"
+            response: "error updating password" //error in fetching user
         });
+        return;
     }
 
-    // if user input correct old password, change it to the new one
+    // if user input the correct old password, change it to the new one
     if (data.password_old == result.password) {
         try {
-            updateUser(user.userId,"password",data.password_new);
+            updateUser(verifyUserObj.response._id, "password", data.password_new);
         
             res.json({
                 success: true,
-                response: "password changed"
+                response: "password changed" //sucess
             });
             return;
         } catch(e) {
+            console.error(e);
             res.json({
                 success: false,
-                response: "error changing password"
+                response: "error updating password" //error updating password
             });
             return;
         }
@@ -151,28 +170,37 @@ router.post('/account/updatePassword', async(req, res) =>{
     } else {
         res.json({
             success: false,
-            response: "invalid password"
+            response: "invalid password" //old password didn't match
         });
         return;
     }
 });
 
-router.post('/account/delete', (req, res) =>{
+router.post('/account/delete', async (req, res) =>{
     
     const data = req.body;
-    
-    if (!jwt.verifyToken(data.token)) {
+
+    if (checkObj(data) === false) {
         res.json({
             success: false,
-            response: "invalid token"
+            response: "invalid input"
         });
+    }
+
+    let verifyUserObj = await verifyUser(data.token);
+    
+    if (!(verifyUserObj.success)) {
+        res.json(verifyUserObj);
         return;
     }
 
     try {
-        //update coll to take from data instead of being hardcoded
-        userId = jwt.decodeToken(data.token).userId;
-        deleteUser(userId);
+        if (!(await deleteUser(verifyUserObj.response._id))) {
+            res.json({
+                success: false,
+                response: "errrrrrrrrror deleting account"
+            });
+        }
         
         res.json({
             success: true,
@@ -180,10 +208,11 @@ router.post('/account/delete', (req, res) =>{
         });
     }
     catch(e) {
+        console.error(e);
         res.json({
-            success: true,
+            success: false,
             response: "error deleting account"
-        })
+        });
     }
 });
 
@@ -191,55 +220,57 @@ router.post('/account/info', async(req, res) => {
 
     const data = req.body;
     
-    if(!jwt.verifyToken(data.token)) {
+    if (checkObj(data) === false) {
         res.json({
             success: false,
-            response: "invalid token"
+            reponse: "invalid input"
         });
-        return;
     }
 
+    // read account info
+    let verifyUserObj = await verifyUser(data.token);
     
-    try {
-        // read account info // select what fields to read from mongo document
-        const userFields = {tokens:1,username:1}
-        username = jwt.decodeToken(data.token).username;
-        const userdata = await readUser({username: username},userFields);
-        res.json({
-            success: true,
-            response: {
-                username: userdata.username,
-                tokens: userdata.tokens.length
-            }
-        });
-    } catch(e) {
-        res.json({
-            success: true,
-            response: "error reading account info"
-        });
+    if (!(verifyUserObj.success)) {
+        res.json(verifyUserObj);
+        return;
     }
+    
+    // respond with account info
+    res.json({
+        success: true,
+        response: {
+            username: verifyUserObj.response.username,
+            tokens: verifyUserObj.response.tokens.length
+        }
+    });
 });
 
 // fetch all logs about the user themselves
 router.post('/account/log', async (req, res) => {
     const data = req.body;
 
-    if(!jwt.verifyToken(data.token)) {
+    if (checkObj(data) === false) {
         res.json({
             success: false,
-            response: "invalid token"
+            reponse: "invalid input"
         });
+    }
+    
+    let verifyUserObj = await verifyUser(data.token);
+    
+    if (!(verifyUserObj.success)) {
+        res.json(verifyUserObj);
         return;
     }
 
-    let decodedToken = jwt.decodeToken(data.token);
+    
     try {
         let queryObj = {
             dateEnd: data.dateEnd,
             dateStart: data.dateStart,
             action: data.action,
-            receiver: decodedToken.username,
-            initiator: decodedToken.username
+            receiver: verifyUserObj.response.username,
+            initiator: verifyUserObj.response.username
         }
         let result = await readLog(queryObj);
     
@@ -268,17 +299,25 @@ router.post('/account/log', async (req, res) => {
 router.post('/director/updateuserrole', async(req,res) => {
     const data = req.body;
     
-    //Token validation
-    if(!jwt.verifyToken(data.token)) {
+    if (checkObj(data) === false) {
         res.json({
             success: false,
-            response: "invalid token"
+            reponse: "invalid input"
         });
+    }
+
+    //Token validation
+    let verifyUserObj = await verifyUser(data.token);
+    if(!verifyUserObj.success) {
+        res.json(verifyUserObj);
         return;
     }
 
-    let decodedToken = jwt.decodeToken(data.token);
-    let initiatorObj = await readUser({username: decodedToken.username}, {role:1});
+    
+    let initiatorObj = {
+        username : verifyUserObj.response.username,
+        role : verifyUserObj.response.role
+    }
     let userObj = await readUser({username: data.username}, {role:1, username:1});
     //Catch errors
     if(!(initiatorObj.role == "director")) {
@@ -302,7 +341,7 @@ router.post('/director/updateuserrole', async(req,res) => {
             date: null,
             action: "change user rights",
             userObj: {
-                initiator: decodedToken.username,
+                initiator: verifyUserObj.response.username,
                 receiver: data.username,
             },
             role: data.updatedRole
@@ -328,19 +367,26 @@ router.post('/director/updateuserrole', async(req,res) => {
 router.post('/director/showall', async (req,res) => {
     const data = req.body;
     const userFields = {username:1,role:1};
-    let decodedToken = jwt.decodeToken(data.token);
 
-    if(!jwt.verifyToken(data.token)) {
+    if (checkObj(data) === false) {
         res.json({
             success: false,
-            response: "invalid token"
+            reponse: "invalid input"
         });
+    }
+    
+    let verifyUserObj = await verifyUser(data.token);
+    if(!verifyUserObj.success) {
+        res.json(verifyUserObj);
         return;
     }
 
-    let initiatorObj = await readUser({username: decodedToken.username}, {role:1});
+    let initiatorObj = {
+        username : verifyUserObj.response.username,
+        role : verifyUserObj.response.role
+    }
 
-    if(initiatorObj.role != "responsible" && initiatorObj.role != "director" ) {
+    if(initiatorObj.role != "director" ) {
         res.json({
             success: false,
             response: "insufficient rights"
@@ -361,17 +407,20 @@ router.post('/director/showall', async (req,res) => {
 router.post('/director/log', async (req, res) => {
     const data = req.body;
 
-    if(!jwt.verifyToken(data.token)) {
+    if (checkObj(data) === false) {
         res.json({
             success: false,
-            response: "invalid token"
+            reponse: "invalid input"
         });
+    }
+
+    let verifyUserObj = await verifyUser(data.token);
+    if(!verifyUserObj.success) {
+        res.json(verifyUserObj);
         return;
     }
 
-    let decodedToken = jwt.decodeToken(data.token);
-    let userObj = await readUser({username: decodedToken.username}, {role:1}); 
-    if (userObj.role != "responsible" && userObj.role != "director") {
+    if (verifyUserObj.response.role != "director") {
         res.json({
             success: false,
             response: "insufficient rights"
@@ -404,20 +453,27 @@ router.post('/director/log', async (req, res) => {
 
 });
 
+//THIS IS A SHITTY NAME USING SHITTY NAMING CONVENTIONS. REPONSIBLE ALSO HAVE ACCESS TO THIS, BUT AT THIS POINT
+// I WON'T CAHNGE IT BECAUSE IT REQUIRES ME TO CHANGE IT IN THE FRONTEND AS WELL AS MANY OTHER ROUTES
 router.post('/director/tokens', async (req, res) => {
     const data = req.body;
 
-    if (!jwt.verifyToken(data.token)) {
+
+    if (checkObj(data) === false) {
         res.json({
             success: false,
-            response: "invalid token"
+            reponse: "invalid input"
         });
+    }
+
+    let verifyUserObj = await verifyUser(data.token);
+    
+    if (!verifyUserObj.success) {
+        res.json(verifyUserObj);
         return;
     }
 
-    let decodedToken = jwt.decodeToken(data.token);
-    let userRole = await readUser({username: decodedToken.username}, {role: 1});
-    if (userRole.role != "director" && userRole.role != "responsible" ) {
+    if (verifyUserObj.response.role != "director" && verifyUserObj.response.role != "responsible" ) {
         res.json({
             success: false,
             response: "insufficient rights"
@@ -438,6 +494,8 @@ router.post('/director/tokens', async (req, res) => {
     });
     return;
 });
+
+
 //////////////////////////////////////////////////
 // Drink tokens
 
@@ -447,20 +505,24 @@ router.post('/director/tokens', async (req, res) => {
 // amount of tokens
 router.post('/tokens/create', async (req, res) => {
     const data = req.body;
-    
-    // check if jwt still valid
-    if(!jwt.verifyToken(data.token)) {
+
+    if (checkObj(data) === false) {
         res.json({
             success: false,
-            response: "invalid token",
+            reponse: "invalid input"
         });
+    }
+    
+    // check if jwt still valid
+    let verifyUserObj = await verifyUser(data.token);
+    
+    if(!verifyUserObj.success) {
+        res.json(verifyUserObj);
         return;
     }
 
-    // check if initiating user is director
-    let decodedToken = jwt.decodeToken(data.token);
-    let initObj = await readUser({username: decodedToken.username}, {role: 1});
-    if(initObj.role != "director" && initObj.role != "responsible") {
+    // check if initiating user is a director or a responsible
+    if(verifyUserObj.response.role != "director" && verifyUserObj.response.role != "responsible") {
         res.json({
             success: false,
             response: "insufficient rights"
@@ -475,7 +537,7 @@ router.post('/tokens/create', async (req, res) => {
         date: null,
         action: "distribute",
         userObj: {
-            initiator: decodedToken.username,
+            initiator: verifyUserObj.response.username,
             receiver: data.username
         },
         tokens: {
@@ -491,34 +553,43 @@ router.post('/tokens/create', async (req, res) => {
 
 router.post('/tokens/redeem', async(req, res) => {
     const data = req.body;
-    
-    if(!jwt.verifyToken(data.token)) {
+
+    if (checkObj(data) === false) {
         res.json({
             success: false,
-            response: "invalid token"
+            reponse: "invalid input"
         });
+    }
+    
+    let verifyUserObj = await verifyUser(data.token);
+    
+    if (!verifyUserObj.success) {
+        res.json(verifyUser);
         return;
-    } 
+    }
 
-    let decodedToken = jwt.decodeToken(data.token);
-    let userObj = await readUser({username: decodedToken.username}, {_id: 1, tokens: 1});
-    if (userObj.tokens.length < 1) {
+    // Check if user has any drink tokens
+    if (verifyUserObj.response.tokens.length < 1) {
         res.json({
             success: false,
             response: "User has no drink tokens"
         });
         return;
     }
-    let result = await deleteToken(userObj._id, userObj.tokens);
+
+    let result = await deleteToken(verifyUserObj.response._id, verifyUserObj.response.tokens);
+    
     // edit object for logging
     let logObj =  { 
         date: null,
         action: "redeem",
         userObj: {
-            initiator: decodedToken.username
+            initiator: verifyUserObj.response.username
         }
     }
+
     await createLogEntry(logObj);
+    
     res.json({
         success: true,
         response: result
@@ -528,17 +599,21 @@ router.post('/tokens/redeem', async(req, res) => {
 router.post('/tokens/count', async(req, res) => {
     const data = req.body;
 
-    if (!jwt.verifyToken(data.token)) {
+    if (checkObj(data) === false) {
         res.json({
-            succes: false,
-            response: "invalid token"
+            success: false,
+            reponse: "invalid input"
         });
+    }
+
+    let verifyUserObj = await verifyUser(data.token);
+    
+    if (!verifyUserObj.success) {
+        res.json(verifyUser);
         return;
     }
 
-    let decodedToken = jwt.decodeToken(data.token);
-    let userObj = await readUser({username: decodedToken.username}, {"role": 1});
-    if (userObj.role != "director" && userObj.role != "responsible") {
+    if (verifyUserObj.response.role != "director" && verifyUserObj.response.role != "responsible") {
         res.json({
             success: false,
             response: "insufficient rights"
