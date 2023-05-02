@@ -210,6 +210,7 @@ router.post('/account/delete', async (req, res) =>{
         });
     }
     catch(e) {
+        console.error(e);
         res.json({
             success: false,
             response: "error deleting account"
