@@ -453,6 +453,8 @@ router.post('/director/log', async (req, res) => {
 
 });
 
+//THIS IS A SHITTY NAME USING SHITTY NAMING CONVENTIONS. REPONSIBLE ALSO HAVE ACCESS TO THIS, BUT AT THIS POINT
+// I WON'T CAHNGE IT BECAUSE IT REQUIRES ME TO CHANGE IT IN THE FRONTEND AS WELL AS MANY OTHER ROUTES
 router.post('/director/tokens', async (req, res) => {
     const data = req.body;
 
@@ -471,9 +473,7 @@ router.post('/director/tokens', async (req, res) => {
         return;
     }
 
-    let decodedToken = jwt.decodeToken(data.token);
-    let userRole = await readUser({username: decodedToken.username}, {role: 1});
-    if (userRole.role != "director" && userRole.role != "responsible" ) {
+    if (verifyUserObj.response.role != "director" && verifyUserObj.response.role != "responsible" ) {
         res.json({
             success: false,
             response: "insufficient rights"
@@ -494,6 +494,8 @@ router.post('/director/tokens', async (req, res) => {
     });
     return;
 });
+
+
 //////////////////////////////////////////////////
 // Drink tokens
 
@@ -512,18 +514,15 @@ router.post('/tokens/create', async (req, res) => {
     }
     
     // check if jwt still valid
-    if(!verifyUser(data.token)) {
-        res.json({
-            success: false,
-            response: "invalid token",
-        });
+    let verifyUserObj = await verifyUser(data.token);
+    
+    if(!verifyUserObj.success) {
+        res.json(verifyUserObj);
         return;
     }
 
     // check if initiating user is director
-    let decodedToken = jwt.decodeToken(data.token);
-    let initObj = await readUser({username: decodedToken.username}, {role: 1});
-    if(initObj.role != "director" && initObj.role != "responsible") {
+    if(verifyUserObj.response.role != "director" && verifyUserObj.response.role != "responsible") {
         res.json({
             success: false,
             response: "insufficient rights"
