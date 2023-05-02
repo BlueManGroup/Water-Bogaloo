@@ -118,8 +118,7 @@ router.post('/account/updatePassword', async(req, res) =>{
         return;
     }
 
-    verifyUserObj = await verifyUser(data.token);
-    
+    verifyUserObj = await verifyUser(data.token)
     if (!verifyUserObj.success) {
         res.json(verifyUserObj);
         return;
@@ -139,7 +138,7 @@ router.post('/account/updatePassword', async(req, res) =>{
     }
     
     try{
-        result = await readUser( { userid: verifyUser.response._id } ,{ "password" : 1 } );
+        result = await readUser( { userid: verifyUserObj.response._id } ,{ "password" : 1 } );
     } catch(e) {
         console.error(e)
         res.json({
