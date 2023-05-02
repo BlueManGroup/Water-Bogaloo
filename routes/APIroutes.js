@@ -108,7 +108,7 @@ router.post('/login', async (req, res) =>{
 //Account routes, needs token validation to be used
 router.post('/account/updatePassword', async(req, res) =>{
     const data = req.body;
-    let result;x
+    let result;
 
     if (checkObj(data) === false) {
         res.json({
@@ -381,7 +381,7 @@ router.post('/director/showall', async (req,res) => {
         return;
     }
 
-    let initiatorObj = await readUser({username: decodedToken.username}, {role:1});
+    let initiatorObj = await readUser({username: user.response.username}, {role:1});
 
     if(initiatorObj.role != "responsible" && initiatorObj.role != "director" ) {
         res.json({
