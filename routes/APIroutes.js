@@ -197,7 +197,7 @@ router.post('/account/delete', async (req, res) =>{
         }
        
         
-        if (!(await deleteUser(userId))) {
+        if (!(await deleteUser(verifyUserObj.response._id))) {
             res.json({
                 success: false,
                 response: "errrrrrrrrror deleting account"
