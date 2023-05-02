@@ -6,6 +6,7 @@ const verifyUser = async (token) => {
     try {
         let decodedToken = verifyAndDecodeToken(token);
         if (!decodedToken) {
+            console.log("decode")
             return ({
                 success: false,
                 response: "invalid token"
@@ -13,6 +14,7 @@ const verifyUser = async (token) => {
         }
         const result = await readUser( { userid: decodedToken.userId }, {} );
         if (!result) {
+            console.log("read")
             return({
                 success: false,
                 response: "error reading user"
