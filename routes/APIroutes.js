@@ -375,15 +375,18 @@ router.post('/director/showall', async (req,res) => {
         });
     }
     
-    let user = await verifyUser(data.token);
-    if(!user.success) {
-        res.json(user);
+    let verifyUserObj = await verifyUser(data.token);
+    if(!verifyUserObj.success) {
+        res.json(verifyUserObj);
         return;
     }
 
-    let initiatorObj = await readUser({username: user.response.username}, {role:1});
+    let initiatorObj = {
+        username : verifyUserObj.response.username,
+        role : verifyUserObj.response.role
+    }
 
-    if(initiatorObj.role != "responsible" && initiatorObj.role != "director" ) {
+    if(initiatorObj.role != "director" ) {
         res.json({
             success: false,
             response: "insufficient rights"
