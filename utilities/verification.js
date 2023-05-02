@@ -20,7 +20,6 @@ const verifyUser = async (token) => {
                 response: "error reading user"
             });
         }
-        console.log("plis work now")
         return({
             success: true,
             response: result
@@ -39,7 +38,6 @@ const checkStr = (toCheck) => {
 }
 
 const checkObj = (toCheck) => {
-    console.log("this should be the start");
     if (typeof(toCheck) !== 'object') {
         return false;
     }
@@ -50,7 +48,6 @@ const checkObj = (toCheck) => {
         }
         toCheck[item] = sanitizeInput(toCheck[item]);
     }
-    console.log("hello",toCheck);
     return toCheck;
 }
 
