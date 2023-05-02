@@ -108,7 +108,7 @@ router.post('/login', async (req, res) =>{
 //Account routes, needs token validation to be used
 router.post('/account/updatePassword', async(req, res) =>{
     const data = req.body;
-    let result;
+    let result;x
 
     if (checkObj(data) === false) {
         res.json({
@@ -130,7 +130,7 @@ router.post('/account/updatePassword', async(req, res) =>{
         return;
     }
 
-    verifyUser = verifyUser(data.token);
+    verifyUserObj = verifyUser(data.token);
     
     if (!verifyUser.success) {
         res.json(verifyUser);
@@ -367,7 +367,6 @@ router.post('/director/updateuserrole', async(req,res) => {
 router.post('/director/showall', async (req,res) => {
     const data = req.body;
     const userFields = {username:1,role:1};
-    let decodedToken = jwt.decodeToken(data.token);
 
     if (checkObj(data) === false) {
         res.json({
