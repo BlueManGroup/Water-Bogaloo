@@ -151,7 +151,7 @@ router.post('/account/updatePassword', async(req, res) =>{
     // if user input the correct old password, change it to the new one
     if (data.password_old == result.password) {
         try {
-            updateUser(verifyUser.response._id, "password", data.password_new);
+            updateUser(verifyUserObj.response._id, "password", data.password_new);
         
             res.json({
                 success: true,
@@ -159,6 +159,7 @@ router.post('/account/updatePassword', async(req, res) =>{
             });
             return;
         } catch(e) {
+            console.error(e);
             res.json({
                 success: false,
                 response: "error updating password" //error updating password
@@ -188,10 +189,10 @@ router.post('/account/delete', async (req, res) =>{
 
     try {
 
-        let user = await verifyUser(data.token);
+        let verifyUserObj = await verifyUser(data.token);
     
-        if (!(user.success)) {
-            res.json(user);
+        if (!(verifyUserObj.success)) {
+            res.json(verifyUserObj);
             return;
         }
        
