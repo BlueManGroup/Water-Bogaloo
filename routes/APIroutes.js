@@ -256,10 +256,10 @@ router.post('/account/log', async (req, res) => {
         });
     }
     
-    let user = await verifyUser(data.token);
+    let verifyUserObj = await verifyUser(data.token);
     
-    if (!(user.success)) {
-        res.json(user);
+    if (!(verifyUserObj.success)) {
+        res.json(verifyUserObj);
         return;
     }
 
@@ -269,8 +269,8 @@ router.post('/account/log', async (req, res) => {
             dateEnd: data.dateEnd,
             dateStart: data.dateStart,
             action: data.action,
-            receiver: decodedToken.username,
-            initiator: decodedToken.username
+            receiver: verifyUserObj.response.username,
+            initiator: verifyUserObj.response.username
         }
         let result = await readLog(queryObj);
     
