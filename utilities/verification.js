@@ -36,6 +36,7 @@ const checkStr = (toCheck) => {
 }
 
 const checkObj = (toCheck) => {
+    console.log("this should be the start");
     if (typeof(toCheck) !== 'object') {
         return false;
     }
