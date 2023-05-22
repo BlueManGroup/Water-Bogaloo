@@ -74,13 +74,10 @@ async function createUser(data) {
             tokens: [],
             role: "user"
         };
-        console.log("userObj = ", userObj);
         response = await db.collection("users").insertOne(userObj);
 
 
-        if (!response.acknowledged) {
-            console.error("shit");
-        }
+        if (!response.acknowledged) throw new Error; 
         let user = {username: data.username, _id: response.insertedId};
         return user;
     } else {
