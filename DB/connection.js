@@ -74,7 +74,7 @@ async function createUser(data) {
             tokens: [],
             role: "user"
         };
-        console.log(userObj);
+        console.log("userObj = ", userObj);
         response = await db.collection("users").insertOne(userObj);
 
 
