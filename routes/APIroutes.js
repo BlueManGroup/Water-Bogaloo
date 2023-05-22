@@ -27,7 +27,6 @@ router.post('/signup', async (req, res) =>{
     }
 
     data.password = hashPassword(data.password);
-    console.log(data.username);
     // create user
     const user = await createUser(data);
 
