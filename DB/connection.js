@@ -78,7 +78,9 @@ async function createUser(data) {
         response = await db.collection("users").insertOne(userObj);
 
 
-        if (!response.acknowledged) throw new Error; 
+        if (!response.acknowledged) {
+            console.error("shit");
+        }
         let user = {username: data.username, _id: response.insertedId};
         return user;
     } else {
