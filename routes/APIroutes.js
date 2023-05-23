@@ -23,10 +23,10 @@ router.post('/signup', async (req, res) =>{
             success: false,
             reponse: "invalid input"
         });
+        return;
     }
 
     data.password = hashPassword(data.password);
-
     // create user
     const user = await createUser(data);
 
@@ -52,6 +52,7 @@ router.post('/login', async (req, res) =>{
             success: false,
             response: "invalid input"
         });
+        return;
     }
     
     data.password = hashPassword(data.password);
@@ -185,6 +186,7 @@ router.post('/account/delete', async (req, res) =>{
             success: false,
             response: "invalid input"
         });
+        return;
     }
 
     let verifyUserObj = await verifyUser(data.token);
@@ -225,6 +227,7 @@ router.post('/account/info', async(req, res) => {
             success: false,
             reponse: "invalid input"
         });
+        return;
     }
 
     // read account info
@@ -254,6 +257,7 @@ router.post('/account/log', async (req, res) => {
             success: false,
             reponse: "invalid input"
         });
+        return;
     }
     
     let verifyUserObj = await verifyUser(data.token);
@@ -304,6 +308,7 @@ router.post('/director/updateuserrole', async(req,res) => {
             success: false,
             reponse: "invalid input"
         });
+        return;
     }
 
     //Token validation
@@ -373,6 +378,7 @@ router.post('/director/showall', async (req,res) => {
             success: false,
             reponse: "invalid input"
         });
+        return;
     }
     
     let verifyUserObj = await verifyUser(data.token);
@@ -412,6 +418,7 @@ router.post('/director/log', async (req, res) => {
             success: false,
             reponse: "invalid input"
         });
+        return;
     }
 
     let verifyUserObj = await verifyUser(data.token);
@@ -464,6 +471,7 @@ router.post('/director/tokens', async (req, res) => {
             success: false,
             reponse: "invalid input"
         });
+        return;
     }
 
     let verifyUserObj = await verifyUser(data.token);
@@ -511,6 +519,7 @@ router.post('/tokens/create', async (req, res) => {
             success: false,
             reponse: "invalid input"
         });
+        return;
     }
     
     // check if jwt still valid
@@ -559,6 +568,7 @@ router.post('/tokens/redeem', async(req, res) => {
             success: false,
             reponse: "invalid input"
         });
+        return;
     }
     
     let verifyUserObj = await verifyUser(data.token);
@@ -604,6 +614,7 @@ router.post('/tokens/count', async(req, res) => {
             success: false,
             reponse: "invalid input"
         });
+        return;
     }
 
     let verifyUserObj = await verifyUser(data.token);

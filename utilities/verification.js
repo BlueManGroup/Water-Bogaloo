@@ -55,7 +55,7 @@ const sanitizeInput = (toSanitize) => {
     // check string for regexp matches in the whole string and replace with _
     // replace the following characters: \ $ " ' { }
     // to add to list, do backslash before character
-    return toSanitize.replace(/[\\\$\"\'\{\}\<\>]/g, '_');
+    return toSanitize.replace(/[\\\$\"\'\{\}\<\>\(\)\;]/g, '_');
 }
 
 module.exports = {
