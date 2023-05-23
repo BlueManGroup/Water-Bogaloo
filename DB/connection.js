@@ -193,7 +193,7 @@ async function readLog(reqObj) {
         // result is an array of objects - not an object itself. therefore the following
         // line does not get the length - need to iterate through all logs and do manually
         // or make the token field an object with an array and an int
-        if (result.tokens) results.token = results.token.length;
+        if (result.tokens) result.token = result.token.length;
         return result;
     } catch (e) {
         console.error(e);
